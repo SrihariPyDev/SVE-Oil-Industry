@@ -89,11 +89,6 @@ export default function Hero() {
               <span className="text-[#d4a435] text-[10px] sm:text-[11px] font-bold tracking-[0.26em] uppercase" style={{ fontFamily: "var(--font-display)" }}>
                 {COMPANY.tagline}
               </span>
-              {/* Emerald APAR badge */}
-              <span className="emerald-live-badge">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#10b981] animate-pulse" />
-                APAR Authorised
-              </span>
             </div>
 
             {/* Headline — adjusted size so it never merges with navbar */}

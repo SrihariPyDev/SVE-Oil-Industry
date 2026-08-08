@@ -8,7 +8,6 @@ const BRANDS = [
   { id: "Mobil",        name: "Mobil" },
   { id: "Shell",        name: "Shell" },
   { id: "Valvoline",    name: "Valvoline" },
-  { id: "bharat-petroleum",    name: "bharat-petroleum" },
   { id: "Total-Energies",  name: "Total-Energies" },
   { id: "Eni",          name: "Eni" },
   { id: "Kluber",       name: "Kluber" },
@@ -85,32 +84,29 @@ function BrandCard({ brand, index }: { brand: typeof BRANDS[0]; index: number })
         style={{ background: "linear-gradient(90deg, #0f172a, #1a2744)" }}
       />
       <div
-        className="h-24 sm:h-28 lg:h-32 flex items-center justify-center p-2 transition-colors duration-300"
-        style={{ background: "white" }}
+        className="relative h-28 sm:h-32 lg:h-36 w-full bg-white rounded-b-2xl overflow-hidden animate-float"
+        style={{ animationDelay: `${index * 0.18}s`, animationDuration: "4s" }}
       >
-        <div
-          className="w-full h-[85%] flex items-center justify-center animate-float relative"
-          style={{ animationDelay: `${index * 0.15}s` }}
-        >
-          {!imgError && (
-            <Image
-              src={`/images/brands/${brand.id}.png`}
-              alt={`${brand.name} logo`}
-              fill
-              sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
-              className="object-contain p-1 group-hover:scale-110 transition-transform duration-300"
-              onError={() => setImgError(true)}
-            />
-          )}
-          {imgError && (
+        {!imgError && (
+          <Image
+            src={`/images/brands/${brand.id}.png`}
+            alt={`${brand.name} logo`}
+            fill
+            sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
+            className="object-contain p-4 group-hover:scale-105 transition-transform duration-300"
+            onError={() => setImgError(true)}
+          />
+        )}
+        {imgError && (
+          <div className="absolute inset-0 flex items-center justify-center p-4">
             <span
               className="text-xs font-black text-gray-400 group-hover:text-[#0f172a] transition-colors duration-300 text-center leading-tight"
               style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
             >
               {brand.name}
             </span>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );

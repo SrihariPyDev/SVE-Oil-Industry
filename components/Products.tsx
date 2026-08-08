@@ -1,60 +1,631 @@
 "use client";
 
-import React, { useState, useCallback, memo } from "react";
-import Image from "next/image";
-import { PRODUCTS, PRODUCT_CATEGORIES, Product } from "@/data/products";
-import ProductModal from "./ProductModal";
+import React, { useState, useCallback, useRef, memo } from "react";
+import {
+  PRODUCT_CATALOGUE,
+  ProductCategory,
+  ProductType,
+  GradeGroup,
+  TextileSubItem,
+} from "@/data/productCatalogue";
+import { COMPANY } from "@/data/config";
 
-export default function Products() {
-  const [activeCategory, setActiveCategory] = useState("All");
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+// ─────────────────────────────────────────
+// Types for internal navigation
+// ─────────────────────────────────────────
+type Level = 1 | 2 | 3;
 
-  const handleProductClick = useCallback((product: Product) => {
-    setSelectedProduct(product);
-  }, []);
+// ─────────────────────────────────────────
+// Icons (SVG, no external deps)
+// ─────────────────────────────────────────
+const ArrowRight = ({ className }: { className?: string }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+  </svg>
+);
 
-  const filtered =
-    activeCategory === "All"
-      ? PRODUCTS
-      : PRODUCTS.filter((p) => p.category === activeCategory);
+const ArrowLeft = ({ className }: { className?: string }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 12H5m7-7l-7 7 7 7" />
+  </svg>
+);
 
-  const usedCategories = [
-    "All",
-    ...Array.from(new Set(PRODUCTS.map((p) => p.category))),
-  ];
+const ChevronRight = ({ className }: { className?: string }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+  </svg>
+);
+
+const WhatsAppIcon = () => (
+  <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current" aria-hidden="true">
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
+  </svg>
+);
+
+const MailIcon = () => (
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+  </svg>
+);
+
+// ─────────────────────────────────────────
+// Breadcrumb
+// ─────────────────────────────────────────
+interface BreadcrumbProps {
+  level: Level;
+  selectedCategory: ProductCategory | null;
+  selectedType: ProductType | null;
+  goToLevel1: () => void;
+  goToLevel2: () => void;
+}
+
+const Breadcrumb = memo(function Breadcrumb({
+  level,
+  selectedCategory,
+  selectedType,
+  goToLevel1,
+  goToLevel2,
+}: BreadcrumbProps) {
+  return (
+    <nav
+      aria-label="Product catalogue navigation"
+      className="flex items-center gap-1.5 flex-wrap mb-8"
+    >
+      {/* Products */}
+      <button
+        onClick={goToLevel1}
+        className="text-[#d4a435] text-sm font-semibold hover:text-white transition-colors duration-200 underline-offset-2 hover:underline"
+        aria-label="Back to all product categories"
+      >
+        Products
+      </button>
+
+      {/* Category */}
+      {level >= 2 && selectedCategory && (
+        <>
+          <ChevronRight className="w-3.5 h-3.5 text-white/25 shrink-0" />
+          <button
+            onClick={level === 3 ? goToLevel2 : undefined}
+            disabled={level === 2}
+            className={`text-sm font-semibold transition-colors duration-200 ${
+              level === 3
+                ? "text-[#d4a435] hover:text-white underline-offset-2 hover:underline cursor-pointer"
+                : "text-white/60 cursor-default"
+            }`}
+          >
+            {selectedCategory.name}
+          </button>
+        </>
+      )}
+
+      {/* Product Type */}
+      {level === 3 && selectedType && (
+        <>
+          <ChevronRight className="w-3.5 h-3.5 text-white/25 shrink-0" />
+          <span className="text-sm text-white/60 font-medium">{selectedType.name}</span>
+        </>
+      )}
+    </nav>
+  );
+});
+
+// ─────────────────────────────────────────
+// Back Button
+// ─────────────────────────────────────────
+interface BackButtonProps {
+  label: string;
+  onClick: () => void;
+}
+
+const BackButton = memo(function BackButton({ label, onClick }: BackButtonProps) {
+  return (
+    <button
+      onClick={onClick}
+      className="group inline-flex items-center gap-2 text-sm text-white/50 hover:text-white transition-colors duration-200 mb-8 px-4 py-2 rounded-full border border-white/10 hover:border-white/25 bg-white/[0.03] hover:bg-white/[0.07]"
+    >
+      <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform duration-200" />
+      {label}
+    </button>
+  );
+});
+
+// ─────────────────────────────────────────
+// Grade Chip
+// ─────────────────────────────────────────
+const GradeChip = memo(function GradeChip({
+  grade,
+  compact = false,
+}: {
+  grade: string;
+  compact?: boolean;
+}) {
+  return (
+    <span
+      className={`inline-flex items-center font-semibold rounded-lg border border-[#d4a435]/25 bg-[#d4a435]/[0.07] text-[#d4a435] transition-all duration-200 hover:bg-[#d4a435]/[0.14] hover:border-[#d4a435]/50 select-none ${
+        compact
+          ? "px-2.5 py-1 text-[11px] tracking-wide"
+          : "px-3.5 py-1.5 text-[12.5px] tracking-wide"
+      }`}
+    >
+      {grade}
+    </span>
+  );
+});
+
+// ─────────────────────────────────────────
+// Enquiry Section
+// ─────────────────────────────────────────
+interface EnquirySectionProps {
+  productName: string;
+  showContactMessage?: boolean;
+}
+
+const EnquirySection = memo(function EnquirySection({
+  productName,
+  showContactMessage = false,
+}: EnquirySectionProps) {
+  const whatsappUrl = `https://wa.me/${COMPANY.contact.whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent(
+    `Hello Sri Venkateswara Enterprises, I would like to enquire about ${productName}. Please share available grades and specifications.`
+  )}`;
+  const mailUrl = `mailto:${COMPANY.contact.email}?subject=Enquiry%3A%20${encodeURIComponent(productName)}&body=Hello%2C%20I%20am%20interested%20in%20${encodeURIComponent(productName)}%20and%20would%20like%20to%20know%20the%20available%20grades%20and%20specifications.`;
 
   return (
-    <section id="products" className="relative overflow-hidden py-20 lg:py-28"
-      style={{ background: "linear-gradient(160deg, #060d1a 0%, #0a1428 40%, #0f172a 70%, #071020 100%)" }}
+    <div className="mt-8 rounded-2xl border border-white/8 bg-[#0b1525] p-6">
+      {showContactMessage && (
+        <p className="text-white/45 text-sm leading-relaxed mb-5">
+          Contact us for available grades and specifications for{" "}
+          <span className="text-white/70 font-semibold">{productName}</span>.
+        </p>
+      )}
+      <div className="flex flex-col sm:flex-row gap-3">
+        <a
+          href={whatsappUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex-1 flex items-center justify-center gap-2 py-3 px-5 rounded-xl bg-[#25D366] hover:bg-[#22c55e] text-white font-semibold text-sm transition-all duration-200 shadow-md hover:shadow-lg hover:-translate-y-0.5"
+        >
+          <WhatsAppIcon />
+          Enquire on WhatsApp
+        </a>
+        <a
+          href={mailUrl}
+          className="flex-1 flex items-center justify-center gap-2 py-3 px-5 rounded-xl bg-[#0f172a] hover:bg-[#1a2744] text-white font-semibold text-sm transition-all duration-300 border border-[#d4a435]/20 hover:border-[#d4a435]/40 hover:-translate-y-0.5"
+        >
+          <MailIcon />
+          Send Email Enquiry
+        </a>
+      </div>
+    </div>
+  );
+});
+
+// ─────────────────────────────────────────
+// Level 1 — Category Card
+// ─────────────────────────────────────────
+const CATEGORY_GRADIENT_OVERLAYS = [
+  "from-[#d4a435]/[0.06] to-transparent",
+  "from-[#6382be]/[0.06] to-transparent",
+  "from-[#10b981]/[0.06] to-transparent",
+  "from-[#c0392b]/[0.05] to-transparent",
+  "from-[#9b59b6]/[0.05] to-transparent",
+];
+
+interface CategoryCardProps {
+  category: ProductCategory;
+  index: number;
+  onClick: () => void;
+}
+
+const CategoryCard = memo(function CategoryCard({
+  category,
+  index,
+  onClick,
+}: CategoryCardProps) {
+  const gradientClass = CATEGORY_GRADIENT_OVERLAYS[index % CATEGORY_GRADIENT_OVERLAYS.length];
+  const typeCount = category.productTypes.length;
+
+  return (
+    <button
+      onClick={onClick}
+      className="group relative text-left rounded-2xl overflow-hidden border border-white/[0.07] hover:border-[#d4a435]/40 bg-[#0b1525] hover:bg-[#0f1e36] transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-black/50 focus:outline-none focus:ring-2 focus:ring-[#d4a435]/30"
+      aria-label={`Explore ${category.name}`}
     >
-      {/* Animated floating glow orb — top left */}
-      <div className="absolute -top-20 -left-20 w-[480px] h-[480px] rounded-full pointer-events-none animate-float"
-        style={{ background: "radial-gradient(circle, rgba(212,164,53,0.07) 0%, rgba(212,164,53,0.02) 40%, transparent 70%)", animationDuration: "9s" }}
+      {/* Gradient overlay */}
+      <div className={`absolute inset-0 bg-gradient-to-br ${gradientClass} pointer-events-none`} />
+
+      {/* Corner accent lines */}
+      <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-[#d4a435]/20 rounded-tl-2xl pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-[#d4a435]/20 rounded-br-2xl pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+      <div className="relative p-7 flex flex-col h-full min-h-[220px]">
+        {/* Icon */}
+        <div className="text-5xl mb-5 group-hover:scale-110 transition-transform duration-300 origin-left">
+          {category.icon}
+        </div>
+
+        {/* Name */}
+        <h3
+          className="text-white font-black text-[17px] leading-snug mb-2.5 group-hover:text-[#d4a435] transition-colors duration-200"
+          style={{ fontFamily: "var(--font-display)" }}
+        >
+          {category.name}
+        </h3>
+
+        {/* Description */}
+        <p className="text-white/45 text-[13px] leading-relaxed mb-5 flex-1 line-clamp-3">
+          {category.description}
+        </p>
+
+        {/* Footer */}
+        <div className="flex items-center justify-between mt-auto pt-4 border-t border-white/[0.06]">
+          <span className="text-white/30 text-[11px] font-medium tracking-wider uppercase">
+            {typeCount} product {typeCount === 1 ? "type" : "types"}
+          </span>
+          <span className="flex items-center gap-1.5 text-[#d4a435] text-[12px] font-bold tracking-wide group-hover:gap-2.5 transition-all duration-200">
+            View Products
+            <ArrowRight className="w-3.5 h-3.5" />
+          </span>
+        </div>
+      </div>
+
+      {/* Bottom gold line on hover */}
+      <div
+        className="absolute bottom-0 left-0 right-0 h-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+        style={{ background: "linear-gradient(90deg, transparent, #d4a435, transparent)" }}
       />
-      {/* Animated floating glow orb — bottom right */}
-      <div className="absolute -bottom-24 -right-16 w-[400px] h-[400px] rounded-full pointer-events-none animate-float"
-        style={{ background: "radial-gradient(circle, rgba(99,130,190,0.07) 0%, rgba(99,130,190,0.02) 40%, transparent 70%)", animationDuration: "12s", animationDelay: "3s" }}
+    </button>
+  );
+});
+
+// ─────────────────────────────────────────
+// Level 1 — Categories View
+// ─────────────────────────────────────────
+interface CategoriesViewProps {
+  onSelect: (cat: ProductCategory) => void;
+}
+
+function CategoriesView({ onSelect }: CategoriesViewProps) {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      {PRODUCT_CATALOGUE.map((cat, i) => (
+        <CategoryCard
+          key={cat.id}
+          category={cat}
+          index={i}
+          onClick={() => onSelect(cat)}
+        />
+      ))}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────
+// Level 2 — Product Type Card
+// ─────────────────────────────────────────
+interface TypeCardProps {
+  type: ProductType;
+  onClick: () => void;
+}
+
+const TypeCard = memo(function TypeCard({ type, onClick }: TypeCardProps) {
+  const isTextileUnit = Boolean(type.subItems && type.subItems.length > 0);
+  const gradeCount = type.gradeGroups
+    ? type.gradeGroups.reduce((sum, g) => sum + g.grades.length, 0)
+    : 0;
+  const subItemCount = type.subItems?.length ?? 0;
+  const countLabel = isTextileUnit
+    ? `${subItemCount} product ${subItemCount === 1 ? "type" : "types"}`
+    : gradeCount > 0
+    ? `${gradeCount} ${gradeCount === 1 ? "grade" : "grades"}`
+    : "Contact for grades";
+
+  return (
+    <button
+      onClick={onClick}
+      className="group relative text-left rounded-2xl overflow-hidden border border-white/[0.07] hover:border-[#d4a435]/35 bg-[#0b1525] hover:bg-[#0f1e36] transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/40 focus:outline-none focus:ring-2 focus:ring-[#d4a435]/30 p-5"
+      aria-label={`View ${type.name}`}
+    >
+      {/* Icon */}
+      <div className="text-3xl mb-3.5 group-hover:scale-110 transition-transform duration-300 origin-left">
+        {type.icon}
+      </div>
+
+      {/* Name */}
+      <h3
+        className="text-white font-bold text-[14px] leading-snug mb-2 group-hover:text-[#d4a435] transition-colors duration-200"
+        style={{ fontFamily: "var(--font-display)" }}
+      >
+        {type.name}
+      </h3>
+
+      {/* Short desc */}
+      <p className="text-white/40 text-[12px] leading-relaxed mb-4 line-clamp-2">
+        {type.shortDesc}
+      </p>
+
+      {/* Footer */}
+      <div className="flex items-center justify-between border-t border-white/[0.05] pt-3.5 mt-auto">
+        <span className="text-white/25 text-[10.5px] tracking-wider uppercase font-medium">
+          {countLabel}
+        </span>
+        <span className="flex items-center gap-1 text-[#d4a435] text-[11.5px] font-bold group-hover:gap-2 transition-all duration-200">
+          {isTextileUnit ? "View Types" : gradeCount > 0 ? "View Grades" : "Enquire"}
+          <ArrowRight className="w-3 h-3" />
+        </span>
+      </div>
+
+      {/* Bottom gold line */}
+      <div
+        className="absolute bottom-0 left-0 right-0 h-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+        style={{ background: "linear-gradient(90deg, transparent, #d4a435, transparent)" }}
       />
-      {/* Centered radial spotlight */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[500px] pointer-events-none"
-        style={{ background: "radial-gradient(ellipse, rgba(212,164,53,0.04) 0%, transparent 65%)" }}
+    </button>
+  );
+});
+
+// ─────────────────────────────────────────
+// Level 2 — Types View
+// ─────────────────────────────────────────
+interface TypesViewProps {
+  category: ProductCategory;
+  onSelect: (type: ProductType) => void;
+  onBack: () => void;
+}
+
+function TypesView({ category, onSelect, onBack }: TypesViewProps) {
+  return (
+    <div>
+      <BackButton label="Back to Categories" onClick={onBack} />
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+        {category.productTypes.map((type) => (
+          <TypeCard key={type.id} type={type} onClick={() => onSelect(type)} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────
+// Level 3 — Sub-Item Card (Textile units)
+// ─────────────────────────────────────────
+interface SubItemCardProps {
+  item: TextileSubItem;
+}
+
+const SubItemCard = memo(function SubItemCard({ item }: SubItemCardProps) {
+  const hasGrades = item.gradeGroups.some((g) => g.grades.length > 0);
+
+  return (
+    <div className="rounded-xl border border-white/[0.07] bg-[#0b1525] p-5">
+      {/* Header */}
+      <div className="flex items-center gap-3 mb-4">
+        <span className="text-2xl">{item.icon}</span>
+        <h4
+          className="text-white font-bold text-[14px] leading-snug"
+          style={{ fontFamily: "var(--font-display)" }}
+        >
+          {item.name}
+        </h4>
+      </div>
+
+      {hasGrades ? (
+        <div className="space-y-4">
+          {item.gradeGroups.map((group, gi) => (
+            <div key={gi}>
+              {group.groupName && (
+                <p className="text-[#d4a435] text-[10.5px] font-bold tracking-[0.18em] uppercase mb-2.5">
+                  {group.groupName}
+                </p>
+              )}
+              <div className="flex flex-wrap gap-2">
+                {group.grades.map((grade) => (
+                  <GradeChip key={grade} grade={grade} compact />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-white/35 text-[12px] leading-relaxed">
+          Contact us for available grades and specifications.
+        </p>
+      )}
+    </div>
+  );
+});
+
+// ─────────────────────────────────────────
+// Level 3 — Grades / Specifications View
+// ─────────────────────────────────────────
+interface GradesViewProps {
+  category: ProductCategory;
+  type: ProductType;
+  onBack: () => void;
+}
+
+function GradesView({ category, type, onBack }: GradesViewProps) {
+  const isTextileUnit = Boolean(type.subItems && type.subItems.length > 0);
+  const hasGrades =
+    !isTextileUnit &&
+    type.gradeGroups &&
+    type.gradeGroups.some((g) => g.grades.length > 0);
+
+  return (
+    <div>
+      <BackButton label={`Back to ${category.name}`} onClick={onBack} />
+
+      {/* Product type header */}
+      <div className="mb-8">
+        <div className="inline-flex items-center gap-3 mb-3">
+          <span className="text-4xl">{type.icon}</span>
+          <h3
+            className="text-white font-black text-2xl sm:text-3xl"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            {type.name}
+          </h3>
+        </div>
+        <p className="text-white/45 text-[14px] leading-relaxed max-w-2xl">
+          {type.shortDesc}
+        </p>
+      </div>
+
+      {/* ── Textile Unit: Sub-items grid ── */}
+      {isTextileUnit && type.subItems && (
+        <>
+          <div className="grid sm:grid-cols-2 gap-4 mb-2">
+            {type.subItems.map((item) => (
+              <SubItemCard key={item.id} item={item} />
+            ))}
+          </div>
+          <EnquirySection productName={type.name} />
+        </>
+      )}
+
+      {/* ── Regular: Grade groups ── */}
+      {hasGrades && type.gradeGroups && (
+        <>
+          <div className="space-y-8 max-w-3xl">
+            {type.gradeGroups.map((group, gi) => (
+              <div key={gi}>
+                {group.groupName && (
+                  <div className="flex items-center gap-3 mb-4">
+                    <span className="w-5 h-[1.5px] bg-[#d4a435]/60" />
+                    <h4 className="text-[#d4a435] text-[11px] font-bold tracking-[0.22em] uppercase">
+                      {group.groupName}
+                    </h4>
+                    <span className="flex-1 h-px bg-[#d4a435]/10" />
+                  </div>
+                )}
+                <div className="flex flex-wrap gap-2.5">
+                  {group.grades.map((grade) => (
+                    <GradeChip key={grade} grade={grade} />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+          <EnquirySection productName={type.name} />
+        </>
+      )}
+
+      {/* ── No grades: Contact CTA ── */}
+      {!isTextileUnit && !hasGrades && (
+        <EnquirySection productName={type.name} showContactMessage />
+      )}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────
+// Main Products Component
+// ─────────────────────────────────────────
+export default function Products() {
+  const [level, setLevel] = useState<Level>(1);
+  const [selectedCategory, setSelectedCategory] = useState<ProductCategory | null>(null);
+  const [selectedType, setSelectedType] = useState<ProductType | null>(null);
+  const [viewKey, setViewKey] = useState(0);
+
+  const sectionRef = useRef<HTMLElement>(null);
+
+  /** Scroll to the top of the #products section on each navigation */
+  const scrollToSection = useCallback(() => {
+    requestAnimationFrame(() => {
+      sectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }, []);
+
+  const goToLevel1 = useCallback(() => {
+    setLevel(1);
+    setSelectedCategory(null);
+    setSelectedType(null);
+    setViewKey((k) => k + 1);
+    scrollToSection();
+  }, [scrollToSection]);
+
+  const goToLevel2 = useCallback(
+    (cat?: ProductCategory) => {
+      const target = cat ?? selectedCategory;
+      if (!target) return;
+      setSelectedCategory(target);
+      setSelectedType(null);
+      setLevel(2);
+      setViewKey((k) => k + 1);
+      scrollToSection();
+    },
+    [selectedCategory, scrollToSection]
+  );
+
+  const goToLevel3 = useCallback(
+    (type: ProductType) => {
+      setSelectedType(type);
+      setLevel(3);
+      setViewKey((k) => k + 1);
+      scrollToSection();
+    },
+    [scrollToSection]
+  );
+
+  return (
+    <section
+      id="products"
+      ref={sectionRef}
+      className="relative overflow-hidden py-20 lg:py-28"
+      style={{
+        background:
+          "linear-gradient(160deg, #060d1a 0%, #0a1428 40%, #0f172a 70%, #071020 100%)",
+      }}
+    >
+      {/* ── Background decorations (unchanged from original) ── */}
+      <div
+        className="absolute -top-20 -left-20 w-[480px] h-[480px] rounded-full pointer-events-none animate-float"
+        style={{
+          background:
+            "radial-gradient(circle, rgba(212,164,53,0.07) 0%, rgba(212,164,53,0.02) 40%, transparent 70%)",
+          animationDuration: "9s",
+        }}
       />
-      {/* Diagonal accent streak */}
-      <div className="absolute top-0 right-0 w-px h-full pointer-events-none opacity-20"
-        style={{ background: "linear-gradient(180deg, transparent, rgba(212,164,53,0.6) 40%, rgba(212,164,53,0.6) 60%, transparent)", transform: "translateX(-120px) skewX(-15deg)", width: "1px" }}
+      <div
+        className="absolute -bottom-24 -right-16 w-[400px] h-[400px] rounded-full pointer-events-none animate-float"
+        style={{
+          background:
+            "radial-gradient(circle, rgba(99,130,190,0.07) 0%, rgba(99,130,190,0.02) 40%, transparent 70%)",
+          animationDuration: "12s",
+          animationDelay: "3s",
+        }}
       />
-      {/* Fine dot grid */}
-      <div className="absolute inset-0 pointer-events-none opacity-[0.018]"
-        style={{ backgroundImage: `radial-gradient(rgba(255,255,255,0.8) 1px, transparent 1px)`, backgroundSize: "32px 32px" }}
+      <div
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[500px] pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(ellipse, rgba(212,164,53,0.04) 0%, transparent 65%)",
+        }}
+      />
+      <div
+        className="absolute top-0 right-0 w-px h-full pointer-events-none opacity-20"
+        style={{
+          background:
+            "linear-gradient(180deg, transparent, rgba(212,164,53,0.6) 40%, rgba(212,164,53,0.6) 60%, transparent)",
+          transform: "translateX(-120px) skewX(-15deg)",
+          width: "1px",
+        }}
+      />
+      <div
+        className="absolute inset-0 pointer-events-none opacity-[0.018]"
+        style={{
+          backgroundImage: `radial-gradient(rgba(255,255,255,0.8) 1px, transparent 1px)`,
+          backgroundSize: "32px 32px",
+        }}
       />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
-        {/* Header */}
+        {/* ── Section Header (unchanged from original) ── */}
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-2 mb-4">
             <span className="w-6 h-[1.5px] bg-[#d4a435]/60" />
-            <span className="text-[#d4a435] text-[11px] font-bold tracking-[0.28em] uppercase">Our Products</span>
+            <span className="text-[#d4a435] text-[11px] font-bold tracking-[0.28em] uppercase">
+              Our Products
+            </span>
             <span className="w-6 h-[1.5px] bg-[#d4a435]/60" />
           </div>
           <h2
@@ -65,133 +636,79 @@ export default function Products() {
             <span className="gold-shimmer">Portfolio</span>
           </h2>
           <p className="text-white/50 max-w-xl mx-auto text-[15px] leading-relaxed">
-            A comprehensive range of industrial oils, lubricants, and specialty products
-            to meet every lubrication requirement across diverse industries.
+            A comprehensive range of industrial oils, lubricants, and specialty
+            products to meet every lubrication requirement across diverse
+            industries.
           </p>
         </div>
 
-        {/* Category filter — horizontally scrollable on mobile */}
-        <div className="flex gap-2 mb-10 overflow-x-auto pb-2 scrollbar-hide justify-start sm:justify-center">
-          {usedCategories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
-              className={`flex-shrink-0 px-4 py-2 rounded-full text-[12px] font-semibold transition-all duration-200 border whitespace-nowrap ${
-                activeCategory === cat
-                  ? "text-white border-transparent shadow-lg shadow-[#0f172a]/30"
-                  : "border-white/15 text-white/60 hover:border-[#d4a435]/50 hover:text-white"
-              }`}
-              style={activeCategory === cat
-                ? { background: "linear-gradient(135deg, #0f172a, #1a2744)", border: "1px solid rgba(212,164,53,0.35)" }
-                : {}
-              }
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
+        {/* ── Breadcrumb (Level 2 and 3 only) ── */}
+        {level > 1 && (
+          <Breadcrumb
+            level={level}
+            selectedCategory={selectedCategory}
+            selectedType={selectedType}
+            goToLevel1={goToLevel1}
+            goToLevel2={() => goToLevel2()}
+          />
+        )}
 
-        {/* Product grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-5">
-          {filtered.map((product, i) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              index={i}
-              onClick={handleProductClick}
+        {/* ── Animated view container ── */}
+        <div key={viewKey} className="animate-fade-in-up" style={{ animationDuration: "0.45s" }}>
+          {level === 1 && <CategoriesView onSelect={goToLevel2} />}
+
+          {level === 2 && selectedCategory && (
+            <TypesView
+              category={selectedCategory}
+              onSelect={goToLevel3}
+              onBack={goToLevel1}
             />
-          ))}
+          )}
+
+          {level === 3 && selectedType && selectedCategory && (
+            <GradesView
+              category={selectedCategory}
+              type={selectedType}
+              onBack={() => goToLevel2()}
+            />
+          )}
         </div>
 
-        {/* Bottom CTA */}
-        <div className="mt-14 text-center">
-          <p className="text-white/40 text-sm mb-4">Can't find what you're looking for?</p>
-          <a
-            href="#contact"
-            onClick={(e) => {
-              e.preventDefault();
-              document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" });
-            }}
-            className="btn-outline-gold inline-flex"
-            style={{ borderColor: "rgba(212,164,53,0.5)", color: "#d4a435" }}
-          >
-            Contact Us for Custom Requirements
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-            </svg>
-          </a>
-        </div>
+        {/* ── Bottom CTA (Level 1 only, unchanged from original) ── */}
+        {level === 1 && (
+          <div className="mt-14 text-center">
+            <p className="text-white/40 text-sm mb-4">
+              Can&apos;t find what you&apos;re looking for?
+            </p>
+            <a
+              href="#contact"
+              onClick={(e) => {
+                e.preventDefault();
+                document
+                  .getElementById("contact")
+                  ?.scrollIntoView({ behavior: "smooth" });
+              }}
+              className="btn-outline-gold inline-flex"
+              style={{ borderColor: "rgba(212,164,53,0.5)", color: "#d4a435" }}
+            >
+              Contact Us for Custom Requirements
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M17 8l4 4m0 0l-4 4m4-4H3"
+                />
+              </svg>
+            </a>
+          </div>
+        )}
       </div>
-
-      {/* Product Modal */}
-      {selectedProduct && (
-        <ProductModal product={selectedProduct} onClose={() => setSelectedProduct(null)} />
-      )}
     </section>
   );
 }
-
-const ProductCard = memo(function ProductCard({
-  product,
-  index,
-  onClick,
-}: {
-  product: Product;
-  index: number;
-  onClick: (product: Product) => void;
-}) {
-  const [imgError, setImgError] = useState(false);
-
-  return (
-    <button
-      onClick={() => onClick(product)}
-      className="group relative bg-[#0f1d35] hover:bg-[#162040] border border-white/5 hover:border-[#d4a435]/25 rounded-2xl overflow-hidden transition-all duration-300 text-left hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#080f1e]/60 focus:outline-none focus:ring-2 focus:ring-[#d4a435]/40"
-      aria-label={`View ${product.name}`}
-    >
-      {/* Image area */}
-      <div className="img-placeholder h-36 sm:h-40 relative overflow-hidden bg-[#0a1525]">
-        <div className="absolute inset-0 bg-radial-gradient pointer-events-none z-10" />
-        {!imgError && (
-          <Image
-            src={product.imageUrl}
-            alt={product.name}
-            fill
-            sizes="(max-width: 640px) 50vw, (max-width: 1200px) 33vw, 25vw"
-            className="object-cover group-hover:scale-110 transition-transform duration-500 opacity-80 group-hover:opacity-100"
-            onError={() => setImgError(true)}
-          />
-        )}
-        {/* Fallback icon */}
-        <div className={`${imgError ? "flex" : "hidden"} absolute inset-0 flex-col items-center justify-center z-10`}>
-          <span className="text-4xl sm:text-5xl mb-1 group-hover:scale-110 transition-transform duration-500">{product.icon}</span>
-          <span className="text-[#d4a435]/60 text-[9px] tracking-[0.3em] uppercase font-semibold">{product.category}</span>
-        </div>
-        {/* Hover gold shimmer overlay */}
-        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-20 pointer-events-none"
-          style={{ background: "linear-gradient(to top, rgba(212,164,53,0.12), transparent)" }}
-        />
-      </div>
-
-      {/* Content */}
-      <div className="p-3.5 sm:p-4">
-        <h3 className="text-white font-bold text-[13px] sm:text-sm mb-1.5 group-hover:text-[#d4a435] transition-colors duration-200 leading-snug">
-          {product.name}
-        </h3>
-        <p className="text-white/40 text-[11px] sm:text-xs leading-relaxed line-clamp-2">{product.shortDesc}</p>
-
-        {/* View details */}
-        <div className="mt-3 flex items-center gap-1 text-[#d4a435] text-[11px] font-bold tracking-wide">
-          View Details
-          <svg className="w-3 h-3 group-hover:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-          </svg>
-        </div>
-      </div>
-
-      {/* Bottom gold line on hover */}
-      <div className="absolute bottom-0 left-0 right-0 h-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-        style={{ background: "linear-gradient(90deg, transparent, #d4a435, transparent)" }}
-      />
-    </button>
-  );
-});

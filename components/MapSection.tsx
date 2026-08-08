@@ -17,26 +17,25 @@ export default function MapSection() {
           <p className="text-gray-500 text-sm mt-2">{COMPANY.address.full}</p>
         </div>
 
-        <div className="relative rounded-3xl overflow-hidden border border-amber-100 shadow-xl">
+        <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden border border-amber-100 shadow-xl">
           <iframe
             title="Sri Venkateswara Enterprises Location"
             src={COMPANY.mapEmbedUrl}
             width="100%"
-            height="400"
             style={{ border: 0, display: "block" }}
             allowFullScreen
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
-            className="w-full"
+            className="w-full h-[300px] sm:h-[380px] lg:h-[450px]"
           />
 
           {/* Overlay info card */}
-          <div className="absolute bottom-4 left-4 sm:bottom-5 sm:left-5 bg-white/95 backdrop-blur-sm rounded-2xl p-4 max-w-[260px] sm:max-w-xs shadow-xl border border-amber-100">
-            <div className="flex items-center gap-2 mb-2">
+          <div className="absolute bottom-3 left-3 right-3 sm:right-auto sm:bottom-5 sm:left-5 bg-white/95 backdrop-blur-md rounded-2xl p-3.5 sm:p-4 max-w-full sm:max-w-xs shadow-xl border border-amber-100">
+            <div className="flex items-center gap-2 mb-1.5 sm:mb-2">
               <div className="w-2 h-2 rounded-full bg-[#d4a435] animate-pulse" />
               <span className="text-[#b8860b] text-[10px] font-bold tracking-widest uppercase">Sri Venkateswara Enterprises</span>
             </div>
-            <p className="text-gray-500 text-xs leading-relaxed mb-2.5">{COMPANY.address.full}</p>
+            <p className="text-gray-600 text-xs leading-relaxed mb-2.5">{COMPANY.address.full}</p>
             <a
               href={COMPANY.googleMapsLink}
               target="_blank"
