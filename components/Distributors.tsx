@@ -95,7 +95,7 @@ export default function Distributors() {
               <p className="text-white/60 text-[14px] leading-relaxed mb-3">
                 APAR Industries is one of India's leading manufacturers of specialty industrial lubricants,
                 including their trusted{" "}
-                <span className="text-[#d4a435] font-semibold">POWEROL</span>{" "}
+                <span className="text-[#d4a435] font-semibold">POWER OIL</span>{" "}
                 range — serving manufacturing, power, automotive, and engineering sectors nationwide.
               </p>
               <p className="text-white/60 text-[14px] leading-relaxed mb-7">

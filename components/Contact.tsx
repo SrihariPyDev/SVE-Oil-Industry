@@ -77,7 +77,7 @@ export default function Contact() {
               </svg>
               <div>
                 <div className="text-white font-bold text-sm">Chat on WhatsApp</div>
-                <div className="text-white/80 text-xs mt-0.5">+91 63810 88744</div>
+                <div className="text-white/80 text-xs mt-0.5">+91 98429 34524</div>
               </div>
               <svg className="w-4 h-4 text-white ml-auto group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
