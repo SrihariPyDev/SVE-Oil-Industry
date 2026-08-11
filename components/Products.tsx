@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useCallback, useRef, memo } from "react";
+import Image from "next/image";
 import {
   PRODUCT_CATALOGUE,
   ProductCategory,
@@ -202,13 +203,15 @@ const EnquirySection = memo(function EnquirySection({
 // ─────────────────────────────────────────
 // Level 1 — Category Card
 // ─────────────────────────────────────────
-const CATEGORY_GRADIENT_OVERLAYS = [
-  "from-[#d4a435]/[0.06] to-transparent",
-  "from-[#6382be]/[0.06] to-transparent",
-  "from-[#10b981]/[0.06] to-transparent",
-  "from-[#c0392b]/[0.05] to-transparent",
-  "from-[#9b59b6]/[0.05] to-transparent",
-];
+
+/** Map category id → public image path */
+const CATEGORY_IMAGES: Record<string, string> = {
+  automotive:   "/images/products/cat_automotive.jpg",
+  industrial:   "/images/products/cat_industrial.jpg",
+  textile:      "/images/products/cat_textile.jpg",
+  metalworking: "/images/products/cat_metalworking.jpg",
+  specialty:    "/images/products/cat_specialty.jpg",
+};
 
 interface CategoryCardProps {
   category: ProductCategory;
@@ -221,43 +224,64 @@ const CategoryCard = memo(function CategoryCard({
   index,
   onClick,
 }: CategoryCardProps) {
-  const gradientClass = CATEGORY_GRADIENT_OVERLAYS[index % CATEGORY_GRADIENT_OVERLAYS.length];
   const typeCount = category.productTypes.length;
+  const imageSrc = CATEGORY_IMAGES[category.id] ?? null;
 
   return (
     <button
       onClick={onClick}
-      className="group relative text-left rounded-2xl overflow-hidden border border-white/[0.07] hover:border-[#d4a435]/40 bg-[#0b1525] hover:bg-[#0f1e36] transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-black/50 focus:outline-none focus:ring-2 focus:ring-[#d4a435]/30"
+      className="group relative text-left rounded-2xl overflow-hidden border border-white/[0.07] hover:border-[#d4a435]/50 bg-[#0b1525] transition-all duration-350 hover:-translate-y-2 hover:shadow-2xl hover:shadow-black/60 focus:outline-none focus:ring-2 focus:ring-[#d4a435]/30"
       aria-label={`Explore ${category.name}`}
     >
-      {/* Gradient overlay */}
-      <div className={`absolute inset-0 bg-gradient-to-br ${gradientClass} pointer-events-none`} />
+      {/* ── Premium photo banner ──────────────────────────────── */}
+      <div className="relative w-full h-[160px] overflow-hidden">
+        {imageSrc ? (
+          <Image
+            src={imageSrc}
+            alt={category.name}
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
+            priority={index < 3}
+          />
+        ) : (
+          <div className="w-full h-full bg-[#0f1e36] flex items-center justify-center text-5xl">
+            {category.icon}
+          </div>
+        )}
+        {/* Dark gradient fade into card body */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              "linear-gradient(to bottom, rgba(11,21,37,0.05) 0%, rgba(11,21,37,0.55) 70%, rgba(11,21,37,1) 100%)",
+          }}
+        />
+        {/* Hover gold tint */}
+        <div className="absolute inset-0 bg-[#d4a435]/0 group-hover:bg-[#d4a435]/10 transition-all duration-350 pointer-events-none" />
+      </div>
 
       {/* Corner accent lines */}
-      <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-[#d4a435]/20 rounded-tl-2xl pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-      <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-[#d4a435]/20 rounded-br-2xl pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-[#d4a435]/25 rounded-tl-2xl pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-[#d4a435]/25 rounded-br-2xl pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-      <div className="relative p-7 flex flex-col h-full min-h-[220px]">
-        {/* Icon */}
-        <div className="text-5xl mb-5 group-hover:scale-110 transition-transform duration-300 origin-left">
-          {category.icon}
-        </div>
-
+      {/* ── Card text body ───────────────────────────────────── */}
+      <div className="relative px-6 pt-4 pb-6 flex flex-col">
         {/* Name */}
         <h3
-          className="text-white font-black text-[17px] leading-snug mb-2.5 group-hover:text-[#d4a435] transition-colors duration-200"
+          className="text-white font-black text-[17px] leading-snug mb-2 group-hover:text-[#d4a435] transition-colors duration-200"
           style={{ fontFamily: "var(--font-display)" }}
         >
           {category.name}
         </h3>
 
         {/* Description */}
-        <p className="text-white/45 text-[13px] leading-relaxed mb-5 flex-1 line-clamp-3">
+        <p className="text-white/45 text-[13px] leading-relaxed mb-5 line-clamp-2">
           {category.description}
         </p>
 
         {/* Footer */}
-        <div className="flex items-center justify-between mt-auto pt-4 border-t border-white/[0.06]">
+        <div className="flex items-center justify-between pt-4 border-t border-white/[0.07]">
           <span className="text-white/30 text-[11px] font-medium tracking-wider uppercase">
             {typeCount} product {typeCount === 1 ? "type" : "types"}
           </span>
@@ -300,6 +324,42 @@ function CategoriesView({ onSelect }: CategoriesViewProps) {
 }
 
 // ─────────────────────────────────────────
+// Level 2 — Product Type Images Map
+// ─────────────────────────────────────────
+/** Map product-type id → public image path. Real photos where available, SVG placeholders otherwise. */
+const PRODUCT_TYPE_IMAGES: Record<string, string> = {
+  // Automotive (real photo for engine oil)
+  "engine-oil":            "/images/products/engine_oil.jpg",
+  "gear-oil":              "/images/products/gear_oil.png",
+  "hydraulic-oil":         "/images/products/hydraulic_oil.png",
+  "hlp-hydraulic-oil":     "/images/products/hlp_hydraulic_oil.png",
+  "brake-oil":             "/images/products/brake_oil.png",
+  "transmission-oil":      "/images/products/transmission_oil.png",
+  "screw-compressor-oil":  "/images/products/screw_compressor_oil.png",
+  // Industrial
+  "turbine-oil":           "/images/products/turbine_oil.png",
+  "compressor-oil":        "/images/products/compressor_oil.png",
+  "transformer-oil":       "/images/products/transformer_oil.png",
+  "heat-transfer-oil":     "/images/products/heat_transfer_oil.png",
+  "rust-preventive-oil":   "/images/products/rust_preventive_oil.png",
+  "spindle-oil":           "/images/products/spindle_oil.png",
+  // Textile units
+  "spinning-unit":         "/images/products/spinning_unit.png",
+  "sizing-unit":           "/images/products/sizing_unit.png",
+  "weaving-unit":          "/images/products/weaving_unit.png",
+  "dyeing-unit":           "/images/products/dyeing_unit.png",
+  "knitting-unit":         "/images/products/knitting_unit.png",
+  // Metal Working
+  "cutting-oil":           "/images/products/cutting_oil.png",
+  "neat-cutting-oil":      "/images/products/neat_cutting_oil.png",
+  "quenching-oil":         "/images/products/quenching_oil.png",
+  // Specialty
+  "grease":                "/images/products/grease_oil.png",
+  "specialty-greases":     "/images/products/specialty_greases_oil.png",
+  "specialty-oils":        "/images/products/specialty_oil.png",
+};
+
+// ─────────────────────────────────────────
 // Level 2 — Product Type Card
 // ─────────────────────────────────────────
 interface TypeCardProps {
@@ -319,39 +379,76 @@ const TypeCard = memo(function TypeCard({ type, onClick }: TypeCardProps) {
     ? `${gradeCount} ${gradeCount === 1 ? "grade" : "grades"}`
     : "Contact for grades";
 
+  const imageSrc = PRODUCT_TYPE_IMAGES[type.id] ?? null;
+
   return (
     <button
       onClick={onClick}
-      className="group relative text-left rounded-2xl overflow-hidden border border-white/[0.07] hover:border-[#d4a435]/35 bg-[#0b1525] hover:bg-[#0f1e36] transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/40 focus:outline-none focus:ring-2 focus:ring-[#d4a435]/30 p-5"
+      className="group relative text-left rounded-2xl overflow-hidden border border-white/[0.07] hover:border-[#d4a435]/40 bg-[#0b1525] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-black/50 focus:outline-none focus:ring-2 focus:ring-[#d4a435]/30"
       aria-label={`View ${type.name}`}
     >
-      {/* Icon */}
-      <div className="text-3xl mb-3.5 group-hover:scale-110 transition-transform duration-300 origin-left">
-        {type.icon}
+      {/* ── Product image banner ─────────────────────────────── */}
+      <div className="relative w-full h-[110px] overflow-hidden">
+        {imageSrc ? (
+          imageSrc.endsWith(".svg") ? (
+            // SVG placeholders: plain img (next/image skips SVG optimization)
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={imageSrc}
+              alt={type.name}
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+          ) : (
+            <Image
+              src={imageSrc}
+              alt={type.name}
+              fill
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+          )
+        ) : (
+          <div className="w-full h-full bg-[#0f1e36] flex items-center justify-center text-3xl">
+            {type.icon}
+          </div>
+        )}
+        {/* Dark gradient fade into card body */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              "linear-gradient(to bottom, rgba(11,21,37,0.0) 0%, rgba(11,21,37,0.5) 60%, rgba(11,21,37,1) 100%)",
+          }}
+        />
+        {/* Hover gold tint */}
+        <div className="absolute inset-0 bg-[#d4a435]/0 group-hover:bg-[#d4a435]/8 transition-all duration-300 pointer-events-none" />
       </div>
 
-      {/* Name */}
-      <h3
-        className="text-white font-bold text-[14px] leading-snug mb-2 group-hover:text-[#d4a435] transition-colors duration-200"
-        style={{ fontFamily: "var(--font-display)" }}
-      >
-        {type.name}
-      </h3>
+      {/* ── Card text body ───────────────────────────────────── */}
+      <div className="px-4 pt-3 pb-4 flex flex-col">
+        {/* Name */}
+        <h3
+          className="text-white font-bold text-[14px] leading-snug mb-1.5 group-hover:text-[#d4a435] transition-colors duration-200"
+          style={{ fontFamily: "var(--font-display)" }}
+        >
+          {type.name}
+        </h3>
 
-      {/* Short desc */}
-      <p className="text-white/40 text-[12px] leading-relaxed mb-4 line-clamp-2">
-        {type.shortDesc}
-      </p>
+        {/* Short desc */}
+        <p className="text-white/40 text-[11.5px] leading-relaxed mb-3.5 line-clamp-2">
+          {type.shortDesc}
+        </p>
 
-      {/* Footer */}
-      <div className="flex items-center justify-between border-t border-white/[0.05] pt-3.5 mt-auto">
-        <span className="text-white/25 text-[10.5px] tracking-wider uppercase font-medium">
-          {countLabel}
-        </span>
-        <span className="flex items-center gap-1 text-[#d4a435] text-[11.5px] font-bold group-hover:gap-2 transition-all duration-200">
-          {isTextileUnit ? "View Types" : gradeCount > 0 ? "View Grades" : "Enquire"}
-          <ArrowRight className="w-3 h-3" />
-        </span>
+        {/* Footer */}
+        <div className="flex items-center justify-between border-t border-white/[0.06] pt-3">
+          <span className="text-white/25 text-[10px] tracking-wider uppercase font-medium">
+            {countLabel}
+          </span>
+          <span className="flex items-center gap-1 text-[#d4a435] text-[11px] font-bold group-hover:gap-2 transition-all duration-200">
+            {isTextileUnit ? "View Types" : gradeCount > 0 ? "View Grades" : "Enquire"}
+            <ArrowRight className="w-3 h-3" />
+          </span>
+        </div>
       </div>
 
       {/* Bottom gold line */}

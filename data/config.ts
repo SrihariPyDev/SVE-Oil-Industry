@@ -24,8 +24,8 @@ export const COMPANY = {
     phoneDisplay: "+91 98429 34524",
     phoneTel: "tel:+919842934524",
 
-    // WhatsApp — unchanged
-    whatsapp: "+916381088744",
+    // WhatsApp
+    whatsapp: "+919842934524",
     whatsappMessage:
       "Hello Sri Venkateswara Enterprises, I would like to know more about your products and services.",
     get whatsappUrl() {

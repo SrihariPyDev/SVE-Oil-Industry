@@ -80,6 +80,7 @@ export default function Navbar() {
             >
               {/* Logo Container — stays large & prominent */}
               <div
+                id="navbar-logo-container"
                 className={`relative flex-shrink-0 transition-all duration-500 group-hover:scale-105 ${
                   scrolled
                     ? "w-[72px] h-[72px] sm:w-[88px] sm:h-[88px]"

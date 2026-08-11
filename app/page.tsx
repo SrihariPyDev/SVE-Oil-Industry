@@ -1,4 +1,5 @@
 import dynamic from 'next/dynamic';
+import Preloader from "@/components/Preloader";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import About from "@/components/About";
@@ -17,6 +18,7 @@ const FloatingButtons = dynamic(() => import("@/components/FloatingButtons"));
 export default function Home() {
   return (
     <main>
+      <Preloader />
       <Navbar />
       <Hero />
       <About />
