@@ -5,14 +5,19 @@ import Image from "next/image";
 import { NAV_LINKS, COMPANY } from "@/data/config";
 
 export default function Navbar() {
-  const [scrolled, setScrolled] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled]           = useState(false);
+  const [menuOpen, setMenuOpen]           = useState(false);
   const [activeSection, setActiveSection] = useState("home");
-  const menuRef = useRef<HTMLDivElement>(null);
+  const menuRef              = useRef<HTMLDivElement>(null);
+  // Ref to freeze scroll-based active tracking during programmatic smooth scroll
+  const isProgrammaticScroll = useRef(false);
+  const scrollFreezeTimer    = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 50);
+      // Skip section detection while we are smooth-scrolling to a clicked link
+      if (isProgrammaticScroll.current) return;
       const sections = NAV_LINKS.map((l) => l.href.replace("#", ""));
       for (let i = sections.length - 1; i >= 0; i--) {
         const el = document.getElementById(sections[i]);
@@ -45,6 +50,17 @@ export default function Navbar() {
       e.preventDefault();
       setMenuOpen(false);
       const id = href.replace("#", "");
+
+      // ── Jump the indicator IMMEDIATELY to the target section ──
+      setActiveSection(id);
+
+      // Freeze scroll-based tracking for long enough for smooth scroll to land
+      isProgrammaticScroll.current = true;
+      if (scrollFreezeTimer.current) clearTimeout(scrollFreezeTimer.current);
+      scrollFreezeTimer.current = setTimeout(() => {
+        isProgrammaticScroll.current = false;
+      }, 1000);
+
       const el = document.getElementById(id);
       if (el) {
         const top = el.getBoundingClientRect().top + window.scrollY - 72;

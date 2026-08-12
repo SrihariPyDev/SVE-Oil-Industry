@@ -3,26 +3,23 @@
 import React, { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 
-// ─── TRENDING PREMIUM: Cinematic Split-Panel Reveal ──────────────
+// ─────────────────────────────────────────────────────────────────
+// PREMIUM CORPORATE PRELOADER — Sri Venkateswara Enterprises
 //
-// Timeline:
-//  0 ms       : Full dark screen visible instantly
-//  150 ms     : Gold loading line sweeps left → right (900ms)
-//  800 ms     : Logo fades + scales in (500ms)
-//  1 300 ms   : Company name slides up (400ms)
-//  1 700 ms   : Hold — shimmer loops on logo
-//  3 000 ms   : SPLIT EXIT — top panel flies up, bottom flies down
-//               Logo simultaneously flies to navbar
-//  3 700 ms   : Unmount
-// ──────────────────────────────────────────────────────────────────
+// Phase timeline:
+//  "enter"  0ms      Logo sweeps in from right → settles at center (700ms)
+//  "hold"   700ms    Orbital rings, glow, shimmer — hold 2 000ms
+//  "flight" 2 700ms  Logo travels to navbar logo (dynamic position, 650ms)
+//  "done"   3 350ms  Unmount
+// ─────────────────────────────────────────────────────────────────
 
-type Phase = "idle" | "bar" | "logo" | "text" | "hold" | "exit" | "done";
+type Phase = "enter" | "hold" | "flight" | "done";
 
 export default function Preloader() {
-  const [mounted, setMounted]             = useState(true);
-  const [phase, setPhase]                 = useState<Phase>("idle");
-  const [flightStyle, setFlightStyle]     = useState<React.CSSProperties>({});
-  const logoRef   = useRef<HTMLDivElement>(null);
+  const [mounted, setMounted]          = useState(true);
+  const [phase, setPhase]              = useState<Phase>("enter");
+  const [flightStyle, setFlightStyle]  = useState<React.CSSProperties>({});
+  const logoRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -31,263 +28,383 @@ export default function Preloader() {
       return;
     }
 
-    const t1 = setTimeout(() => setPhase("bar"),  150);
-    const t2 = setTimeout(() => setPhase("logo"), 800);
-    const t3 = setTimeout(() => setPhase("text"), 1300);
-    const t4 = setTimeout(() => setPhase("hold"), 1700);
+    // 700ms → logo has settled at center; begin premium hold
+    const t1 = setTimeout(() => setPhase("hold"), 700);
 
-    const t5 = setTimeout(() => {
-      const nav   = document.getElementById("navbar-logo-container");
-      const logo  = logoRef.current;
+    // 2 700ms → calculate real navbar logo position and fly there
+    const t2 = setTimeout(() => {
+      const navEl  = document.getElementById("navbar-logo-container");
+      const logoEl = logoRef.current;
 
-      if (nav && logo) {
-        const nr = nav.getBoundingClientRect();
-        const lr = logo.getBoundingClientRect();
+      if (navEl && logoEl) {
+        const nr = navEl.getBoundingClientRect();
+        const lr = logoEl.getBoundingClientRect();
+        // Dynamically computed — works on mobile, tablet & desktop
         const dx = (nr.left + nr.width  / 2) - (lr.left + lr.width  / 2);
         const dy = (nr.top  + nr.height / 2) - (lr.top  + lr.height / 2);
         const sc = nr.width / lr.width;
         setFlightStyle({
-          transform : `translate3d(${dx}px,${dy}px,0) scale(${sc})`,
+          transform : `translate3d(${dx}px, ${dy}px, 0) scale(${sc})`,
           opacity   : 0.95,
-          transition: "transform 0.65s cubic-bezier(0.16,1,0.3,1), opacity 0.65s ease-in-out",
+          transition: "transform 0.65s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.65s ease-in-out",
         });
       } else {
         setFlightStyle({
-          transform : "translate3d(0,-50vh,0) scale(0.3)",
+          transform : "translate3d(0, -50vh, 0) scale(0.3)",
           opacity   : 0,
           transition: "transform 0.65s ease-in-out, opacity 0.65s ease-in-out",
         });
       }
-      setPhase("exit");
-    }, 3000);
+      setPhase("flight");
+    }, 2700);
 
-    const t6 = setTimeout(() => { setPhase("done"); setMounted(false); }, 3750);
+    const t3 = setTimeout(() => { setPhase("done"); setMounted(false); }, 3400);
 
-    return () => {
-      [t1, t2, t3, t4, t5, t6].forEach(clearTimeout);
-    };
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
   }, []);
 
   if (!mounted) return null;
 
-  const showLogo  = phase === "logo" || phase === "text" || phase === "hold" || phase === "exit";
-  const showText  = phase === "text" || phase === "hold" || phase === "exit";
-  const isExit    = phase === "exit" || phase === "done";
+  const isHold   = phase === "hold"   || phase === "flight";
+  const isFlight = phase === "flight" || phase === "done";
+
+  // ── Logo container transform per phase ──────────────────────────
+  const logoStyle: React.CSSProperties =
+    phase === "flight" ? flightStyle
+    : phase === "enter"
+      ? {
+          animation : "sveLogoEnter 0.7s cubic-bezier(0.16, 1, 0.3, 1) both",
+          willChange: "transform, opacity",
+        }
+      : { transform: "translate3d(0, 0, 0) scale(1)", opacity: 1 };
 
   return (
     <>
-      {/* ── TOP PANEL ───────────────────────────────────────────── */}
+      {/* ── Full-screen dark panel ─────────────────────────────── */}
       <div
         aria-hidden="true"
         style={{
-          position  : "fixed",
-          top: 0, left: 0, right: 0,
-          height    : "50vh",
-          zIndex    : 99998,
-          background: "linear-gradient(to bottom, #040f1a 0%, #071929 100%)",
-          transform : isExit ? "translateY(-101%)" : "translateY(0)",
-          transition: isExit ? "transform 0.72s cubic-bezier(0.76,0,0.24,1)" : "none",
-          willChange: "transform",
+          position     : "fixed",
+          inset        : 0,
+          zIndex       : 99999,
+          overflow     : "hidden",
           pointerEvents: "none",
+          background   : "radial-gradient(ellipse 90% 90% at 50% 50%, #0c2040 0%, #071929 55%, #040d18 100%)",
+          opacity      : isFlight ? 0 : 1,
+          transition   : isFlight ? "opacity 0.55s ease-out 0.15s" : "none",
         }}
       >
-        {/* subtle horizontal scan line */}
-        <div style={{
-          position  : "absolute",
-          bottom    : 0, left: 0, right: 0,
-          height    : "1px",
-          background: "linear-gradient(90deg, transparent, rgba(212,164,53,0.4) 50%, transparent)",
-        }} />
-      </div>
-
-      {/* ── BOTTOM PANEL ────────────────────────────────────────── */}
-      <div
-        aria-hidden="true"
-        style={{
-          position  : "fixed",
-          bottom: 0, left: 0, right: 0,
-          height    : "50vh",
-          zIndex    : 99998,
-          background: "linear-gradient(to top, #040f1a 0%, #071929 100%)",
-          transform : isExit ? "translateY(101%)" : "translateY(0)",
-          transition: isExit ? "transform 0.72s cubic-bezier(0.76,0,0.24,1)" : "none",
-          willChange: "transform",
-          pointerEvents: "none",
-        }}
-      >
-        {/* subtle horizontal scan line */}
-        <div style={{
-          position  : "absolute",
-          top       : 0, left: 0, right: 0,
-          height    : "1px",
-          background: "linear-gradient(90deg, transparent, rgba(212,164,53,0.4) 50%, transparent)",
-        }} />
-      </div>
-
-      {/* ── CENTER STAGE (always above panels) ──────────────────── */}
-      <div
-        aria-hidden="true"
-        style={{
-          position      : "fixed",
-          inset         : 0,
-          zIndex        : 99999,
-          display       : "flex",
-          flexDirection : "column",
-          alignItems    : "center",
-          justifyContent: "center",
-          pointerEvents : "none",
-        }}
-      >
-        {/* ── GOLD LOADING LINE ───────────────────────────────── */}
-        <div style={{
-          width   : "clamp(200px,30vw,360px)",
-          height  : "2px",
-          background: "#0d1e30",
-          borderRadius: "2px",
-          overflow: "hidden",
-          marginBottom: "2.5rem",
-          opacity : isExit ? 0 : 1,
-          transition: isExit ? "opacity 0.2s ease" : "none",
-        }}>
-          <div style={{
-            height    : "100%",
-            background: "linear-gradient(90deg, transparent, #d4a435, #f5dc80, #d4a435, transparent)",
-            animation : phase !== "idle" ? "sveLine 0.9s cubic-bezier(0.22,1,0.36,1) forwards" : "none",
-            transform : phase === "idle" ? "translateX(-100%)" : undefined,
-          }} />
-        </div>
-
-        {/* ── SVE LOGO ────────────────────────────────────────── */}
+        {/* ── Very subtle rotating conic light rays ─────────────── */}
         <div
-          ref={logoRef}
           style={{
-            position : "relative",
-            width    : "clamp(140px,18vw,220px)",
-            height   : "clamp(140px,18vw,220px)",
-            opacity  : showLogo ? 1 : 0,
-            transform: showLogo ? "scale(1) translateY(0)" : "scale(0.6) translateY(20px)",
-            transition: showLogo
-              ? "opacity 0.55s ease, transform 0.55s cubic-bezier(0.34,1.56,0.64,1)"
-              : "none",
-            willChange: "transform,opacity",
-            ...(isExit ? flightStyle : {}),
+            position     : "absolute",
+            inset        : 0,
+            background   : "conic-gradient(from 0deg at 50% 50%, transparent 0deg, rgba(212,164,53,0.025) 60deg, transparent 120deg, rgba(212,164,53,0.03) 200deg, transparent 260deg, rgba(212,164,53,0.025) 310deg, transparent 360deg)",
+            animation    : "sveRays 18s linear infinite",
+            willChange   : "transform",
+            pointerEvents: "none",
+          }}
+        />
+
+        {/* ── Centre stage ──────────────────────────────────────── */}
+        <div
+          style={{
+            position       : "absolute",
+            inset          : 0,
+            display        : "flex",
+            flexDirection  : "column",
+            alignItems     : "center",
+            justifyContent : "center",
+            padding        : "1rem",
           }}
         >
-          <Image
-            src="/images/logo-new.png"
-            alt="Sri Venkateswara Enterprises"
-            fill
-            priority
-            sizes="220px"
+          {/* ── Orbital composition ─────────────────────────────── */}
+          <div
             style={{
-              objectFit: "contain",
-              filter   : "drop-shadow(0 0 40px rgba(212,164,53,0.35)) drop-shadow(0 0 80px rgba(30,64,175,0.25))",
+              position       : "relative",
+              display        : "flex",
+              alignItems     : "center",
+              justifyContent : "center",
+              // Scales on every breakpoint without overflow
+              width          : "min(65vmin, 440px)",
+              height         : "min(65vmin, 440px)",
+              flexShrink     : 0,
             }}
-          />
-
-          {/* Gold shimmer over logo */}
-          {(phase === "hold" || phase === "text") && (
-            <div style={{
-              position        : "absolute",
-              inset           : 0,
-              maskImage       : "url(/images/logo-new.png)",
-              WebkitMaskImage : "url(/images/logo-new.png)",
-              maskSize        : "contain",
-              WebkitMaskSize  : "contain",
-              maskRepeat      : "no-repeat",
-              WebkitMaskRepeat: "no-repeat",
-              maskPosition    : "center",
-              WebkitMaskPosition: "center",
-              overflow        : "hidden",
-            }}>
-              <div style={{
-                position  : "absolute",
-                inset     : 0,
-                background: "linear-gradient(105deg,transparent 25%,rgba(255,245,180,0.8) 50%,transparent 75%)",
-                animation : "sveShimmer 2s ease-in-out infinite",
-              }} />
+          >
+            {/* ── OUTER ORBIT RING — slow clockwise ─────────────── */}
+            <div
+              style={{
+                position     : "absolute",
+                inset        : 0,
+                borderRadius : "50%",
+                border       : "1px solid rgba(212,164,53,0.12)",
+                animation    : isHold ? "sveOrbit1 22s linear infinite" : "none",
+                willChange   : "transform",
+              }}
+            >
+              {/* travelling dot on outer ring */}
+              <span
+                style={{
+                  position     : "absolute",
+                  top          : "-4px",
+                  left         : "50%",
+                  transform    : "translateX(-50%)",
+                  width        : "8px",
+                  height       : "8px",
+                  borderRadius : "50%",
+                  background   : "radial-gradient(circle, #f0c84a 0%, #d4a435 60%, transparent 100%)",
+                  boxShadow    : "0 0 10px 2px rgba(212,164,53,0.6)",
+                  opacity      : isHold ? 1 : 0,
+                  transition   : "opacity 0.5s ease",
+                }}
+              />
             </div>
-          )}
+
+            {/* ── MIDDLE ORBIT RING — counter-clockwise dashed ──── */}
+            <div
+              style={{
+                position     : "absolute",
+                inset        : "min(5vmin, 34px)",
+                borderRadius : "50%",
+                border       : "1px dashed rgba(212,164,53,0.18)",
+                animation    : isHold ? "sveOrbit2 14s linear infinite reverse" : "none",
+                willChange   : "transform",
+                opacity      : isHold ? 1 : 0,
+                transition   : "opacity 0.6s ease 0.2s",
+              }}
+            />
+
+            {/* ── INNER SOLID RING with glow ────────────────────── */}
+            <div
+              style={{
+                position     : "absolute",
+                inset        : "min(10vmin, 68px)",
+                borderRadius : "50%",
+                border       : "1.5px solid rgba(212,164,53,0.28)",
+                boxShadow    : "0 0 20px rgba(212,164,53,0.07), inset 0 0 20px rgba(212,164,53,0.05)",
+                animation    : isHold ? "sveOrbit3 10s linear infinite" : "none",
+                willChange   : "transform",
+                opacity      : isHold ? 1 : 0,
+                transition   : "opacity 0.6s ease 0.35s",
+              }}
+            >
+              {/* travelling dot on inner ring */}
+              <span
+                style={{
+                  position     : "absolute",
+                  bottom       : "-3px",
+                  left         : "50%",
+                  transform    : "translateX(-50%)",
+                  width        : "6px",
+                  height       : "6px",
+                  borderRadius : "50%",
+                  background   : "radial-gradient(circle, #ffffff 0%, #d4a435 60%, transparent 100%)",
+                  boxShadow    : "0 0 8px 2px rgba(212,164,53,0.7)",
+                  opacity      : isHold ? 1 : 0,
+                  transition   : "opacity 0.5s ease 0.35s",
+                }}
+              />
+            </div>
+
+            {/* ── Soft radial halo behind logo ──────────────────── */}
+            <div
+              style={{
+                position     : "absolute",
+                inset        : "min(14vmin, 95px)",
+                borderRadius : "50%",
+                background   : "radial-gradient(circle, rgba(212,164,53,0.09) 0%, rgba(30,64,175,0.07) 55%, transparent 80%)",
+                opacity      : isHold ? 1 : 0,
+                transition   : "opacity 0.8s ease",
+              }}
+            />
+
+            {/* ── SVE LOGO ────────────────────────────────────────── */}
+            <div
+              ref={logoRef}
+              style={{
+                position  : "relative",
+                // Proportional on all screen sizes
+                width     : "min(26vmin, 190px)",
+                height    : "min(26vmin, 190px)",
+                minWidth  : "100px",
+                minHeight : "100px",
+                zIndex    : 10,
+                willChange: "transform, opacity",
+                flexShrink: 0,
+                ...logoStyle,
+              }}
+            >
+              {/* Logo image */}
+              <Image
+                src="/images/logo-new.png"
+                alt="Sri Venkateswara Enterprises"
+                fill
+                priority
+                sizes="(max-width: 480px) 100px, (max-width: 768px) 150px, 190px"
+                style={{
+                  objectFit : "contain",
+                  filter    : isHold
+                    ? "drop-shadow(0 0 28px rgba(212,164,53,0.45)) drop-shadow(0 4px 18px rgba(30,64,175,0.35))"
+                    : "drop-shadow(0 0 10px rgba(212,164,53,0.2))",
+                  transition: "filter 0.6s ease",
+                }}
+              />
+
+              {/* ── Gold shimmer mask over logo (hold only) ─────── */}
+              {isHold && (
+                <div
+                  style={{
+                    position            : "absolute",
+                    inset               : 0,
+                    overflow            : "hidden",
+                    maskImage           : "url(/images/logo-new.png)",
+                    WebkitMaskImage     : "url(/images/logo-new.png)",
+                    maskSize            : "contain",
+                    WebkitMaskSize      : "contain",
+                    maskRepeat          : "no-repeat",
+                    WebkitMaskRepeat    : "no-repeat",
+                    maskPosition        : "center",
+                    WebkitMaskPosition  : "center",
+                    pointerEvents       : "none",
+                  }}
+                >
+                  <div
+                    style={{
+                      position  : "absolute",
+                      inset     : 0,
+                      background: "linear-gradient(110deg, transparent 20%, rgba(255,248,200,0.75) 50%, transparent 80%)",
+                      animation : "sveShimmer 2.8s ease-in-out infinite",
+                    }}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* ── Company name ────────────────────────────────────── */}
+          <div
+            style={{
+              marginTop : "clamp(1.2rem, 3.5vmin, 2rem)",
+              textAlign : "center",
+              // Constrain width to prevent overflow on tiny phones
+              maxWidth  : "min(320px, 88vw)",
+              width     : "100%",
+              opacity   : isHold && !isFlight ? 1 : 0,
+              transform : isHold && !isFlight ? "translateY(0)" : "translateY(10px)",
+              transition: "opacity 0.5s ease 0.1s, transform 0.5s ease 0.1s",
+            }}
+          >
+            <p
+              style={{
+                color         : "#d4a435",
+                fontSize      : "clamp(7.5px, 2vmin, 10.5px)",
+                fontWeight    : 700,
+                letterSpacing : "clamp(0.15em, 0.4vw, 0.3em)",
+                textTransform : "uppercase",
+                fontFamily    : "var(--font-display, sans-serif)",
+                marginBottom  : "0.45rem",
+                lineHeight    : 1.4,
+              }}
+            >
+              Sri Venkateswara Enterprises
+            </p>
+            {/* Gold separator */}
+            <div
+              style={{
+                width     : "36px",
+                height    : "1px",
+                background: "linear-gradient(90deg, transparent, #d4a435, transparent)",
+                margin    : "0 auto 0.45rem",
+              }}
+            />
+            <p
+              style={{
+                color         : "rgba(255,255,255,0.28)",
+                fontSize      : "clamp(6.5px, 1.6vmin, 9px)",
+                fontWeight    : 500,
+                letterSpacing : "0.18em",
+                textTransform : "uppercase",
+                fontFamily    : "var(--font-sans, sans-serif)",
+              }}
+            >
+              Industrial Lubricants · Est. 2001
+            </p>
+          </div>
         </div>
 
-        {/* ── COMPANY NAME + TAGLINE ──────────────────────────── */}
-        <div style={{
-          marginTop : "1.8rem",
-          textAlign : "center",
-          opacity   : showText && !isExit ? 1 : 0,
-          transform : showText && !isExit ? "translateY(0)" : "translateY(12px)",
-          transition: "opacity 0.5s ease, transform 0.5s ease",
-        }}>
-          <p style={{
-            color       : "#d4a435",
-            fontSize    : "10.5px",
-            fontWeight  : 700,
-            letterSpacing: "0.32em",
-            textTransform: "uppercase",
-            fontFamily  : "var(--font-display), sans-serif",
-            marginBottom: "0.4rem",
-          }}>
-            Sri Venkateswara Enterprises
-          </p>
-          <div style={{
-            width     : "40px",
-            height    : "1px",
-            background: "linear-gradient(90deg,transparent,#d4a435,transparent)",
-            margin    : "0 auto",
-          }} />
-          <p style={{
-            color       : "rgba(255,255,255,0.35)",
-            fontSize    : "9px",
-            fontWeight  : 500,
-            letterSpacing: "0.2em",
-            textTransform: "uppercase",
-            fontFamily  : "var(--font-sans), sans-serif",
-            marginTop   : "0.4rem",
-          }}>
-            Industrial Lubricants
-          </p>
-        </div>
+        {/* ── Bottom gold accent line ─────────────────────────── */}
+        <div
+          style={{
+            position  : "absolute",
+            bottom    : 0,
+            left      : 0,
+            right     : 0,
+            height    : "2px",
+            background: "linear-gradient(90deg, transparent, rgba(212,164,53,0.5) 25%, rgba(240,200,74,0.85) 50%, rgba(212,164,53,0.5) 75%, transparent)",
+            opacity   : isHold && !isFlight ? 1 : 0,
+            transition: "opacity 0.6s ease 0.3s",
+          }}
+        />
 
-        {/* ── BOTTOM PROGRESS DOTS ────────────────────────────── */}
-        <div style={{
-          position  : "absolute",
-          bottom    : "2.5rem",
-          display   : "flex",
-          gap       : "6px",
-          opacity   : showLogo && !isExit ? 1 : 0,
-          transition: "opacity 0.4s ease",
-        }}>
-          {[0, 1, 2].map((i) => (
-            <div key={i} style={{
-              width     : "5px",
-              height    : "5px",
-              borderRadius: "50%",
-              background: "#d4a435",
-              animation : `sveDot 1.2s ease-in-out ${i * 0.2}s infinite`,
-            }} />
-          ))}
-        </div>
+        {/* ── Top gold accent line ────────────────────────────── */}
+        <div
+          style={{
+            position  : "absolute",
+            top       : 0,
+            left      : 0,
+            right     : 0,
+            height    : "2px",
+            background: "linear-gradient(90deg, transparent, rgba(212,164,53,0.3) 30%, rgba(212,164,53,0.5) 50%, rgba(212,164,53,0.3) 70%, transparent)",
+            opacity   : isHold && !isFlight ? 1 : 0,
+            transition: "opacity 0.6s ease 0.3s",
+          }}
+        />
       </div>
 
-      {/* ── KEYFRAMES ───────────────────────────────────────────── */}
+      {/* ── Keyframes ─────────────────────────────────────────────── */}
       {/* eslint-disable-next-line react/no-unknown-property */}
       <style jsx global>{`
-        /* Gold bar sweeps left to right */
-        @keyframes sveLine {
-          from { transform: translateX(-100%); }
-          to   { transform: translateX(100%);  }
+
+        /* Logo sweeps in from the right side → settles at centre */
+        @keyframes sveLogoEnter {
+          0% {
+            transform : translate3d(55vw, 0, 0) scale(0.82);
+            opacity   : 0;
+          }
+          30% { opacity: 1; }
+          78% {
+            transform : translate3d(-4px, 0, 0) scale(1.03);
+          }
+          100% {
+            transform : translate3d(0, 0, 0) scale(1);
+            opacity   : 1;
+          }
         }
 
-        /* Gold shimmer across logo */
+        /* Orbital ring rotations */
+        @keyframes sveOrbit1 {
+          from { transform: rotate(0deg);   }
+          to   { transform: rotate(360deg); }
+        }
+        @keyframes sveOrbit2 {
+          from { transform: rotate(0deg);   }
+          to   { transform: rotate(360deg); }
+        }
+        @keyframes sveOrbit3 {
+          from { transform: rotate(0deg);   }
+          to   { transform: rotate(360deg); }
+        }
+
+        /* Subtle ambient light conic rotation */
+        @keyframes sveRays {
+          from { transform: rotate(0deg);   }
+          to   { transform: rotate(360deg); }
+        }
+
+        /* Gold shimmer sweep across logo pixels */
         @keyframes sveShimmer {
-          0%   { transform: translateX(-120%); }
-          100% { transform: translateX(120%);  }
-        }
-
-        /* Pulsing dots */
-        @keyframes sveDot {
-          0%, 80%, 100% { transform: scale(0.6); opacity: 0.35; }
-          40%            { transform: scale(1.2); opacity: 1;    }
+          0%   { transform: translateX(-130%); }
+          100% { transform: translateX(130%);  }
         }
       `}</style>
     </>

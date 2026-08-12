@@ -61,18 +61,35 @@ export default function Distributors() {
           <div className="relative grid lg:grid-cols-2 gap-8 sm:gap-10 items-center p-8 sm:p-12">
 
             {/* Left — APAR Brand Card with HD Logo */}
-            <div className="flex flex-col items-center lg:items-center gap-5">
+            <div className="flex flex-col items-center gap-5">
               <div className="relative">
-                <div className="rounded-2xl  flex items-center justify-center p-8 sm:p-10 shadow-2xl border border-[#d4a435]/20 overflow-hidden group transition-all duration-300 hover:shadow-[0_20px_60px_rgba(212,164,53,0.18)]">
-                  <img
-  src="/images/brands/Apar.jpg"
-  alt="APAR Industries — Tomorrow's solutions today"
-  className="w-70 sm:w-56 lg:w-40 h-auto object-contain drop-shadow-md transition-transform duration-300 group-hover:scale-105"
-/>
-                </div>
-                <div className="absolute -inset-4 rounded-3xl -z-10 blur-2xl opacity-40"
-                  style={{ background: "radial-gradient(circle, rgba(16,185,129,0.25), transparent)" }}
+                {/* Outer gold glow */}
+                <div
+                  className="absolute -inset-4 rounded-3xl -z-10 blur-2xl opacity-40"
+                  style={{ background: "radial-gradient(circle, rgba(212,164,53,0.3), transparent)" }}
                 />
+                {/* Pure white card — logo renders sharp and clean */}
+                <div
+                  className="rounded-2xl flex items-center justify-center px-10 py-8 sm:px-14 sm:py-10 shadow-2xl transition-all duration-300 hover:shadow-[0_20px_60px_rgba(212,164,53,0.3)] group"
+                  style={{
+                    background: "#ffffff",
+                    border: "2px solid rgba(212,164,53,0.35)",
+                    minWidth: "280px",
+                    minHeight: "180px",
+                  }}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/images/brands/Apar.jpg"
+                    alt="APAR Industries — Tomorrow's solutions today"
+                    width={280}
+                    height={140}
+                    loading="eager"
+                    decoding="sync"
+                    className="w-56 sm:w-64 h-auto object-contain transition-transform duration-300 group-hover:scale-105"
+                    style={{ display: "block" }}
+                  />
+                </div>
               </div>
 
               <div className="text-center lg:text-left">

@@ -65,8 +65,7 @@ body {
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* GPU-composited scroll layer */
-  transform: translateZ(0);
+  /* NOTE: Do NOT add transform here — it breaks position:fixed navbar */
 }
 
 /* Fast touch response — removes 300ms tap delay everywhere */
