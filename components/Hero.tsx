@@ -63,7 +63,7 @@ export default function Hero() {
                 className="w-full h-full object-cover"
                 style={{ filter: "brightness(0.72) contrast(1.1) saturate(1.05)" }}
                 muted loop playsInline
-                preload={i === 0 ? "auto" : "none"}
+                preload={i === 0 ? "auto" : "metadata"}
               />
             </div>
             {/* Overlay — darker left, transparent right for readability */}

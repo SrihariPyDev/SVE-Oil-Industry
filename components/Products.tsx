@@ -131,7 +131,7 @@ const BackButton = memo(function BackButton({ label, onClick }: BackButtonProps)
 });
 
 // ─────────────────────────────────────────
-// Grade Chip
+// Grade Chip (plain pill — used inside SubItemCard only)
 // ─────────────────────────────────────────
 const GradeChip = memo(function GradeChip({
   grade,
@@ -154,7 +154,138 @@ const GradeChip = memo(function GradeChip({
 });
 
 // ─────────────────────────────────────────
-// Enquiry Section
+// Level 2 — Product Type Images Map
+// ─────────────────────────────────────────
+/** Map product-type id → public image path (user-uploaded PNG files). */
+const PRODUCT_TYPE_IMAGES: Record<string, string> = {
+  // Automotive
+  "engine-oil":            "/images/products/engine_oil.png",
+  "gear-oil":              "/images/products/gear_oil.png",
+  "hydraulic-oil":         "/images/products/hydraulic_oil.png",
+  "hlp-hydraulic-oil":     "/images/products/hlp_hydraulic_oil.png",
+  "brake-oil":             "/images/products/brake_oil.png",
+  "transmission-oil":      "/images/products/transmission_oil.png",
+  "screw-compressor-oil":  "/images/products/screw_compressor_oil.png",
+  // Industrial
+  "turbine-oil":           "/images/products/turbine_oil.png",
+  "compressor-oil":        "/images/products/compressor_oil.png",
+  "transformer-oil":       "/images/products/transformer_oil.png",
+  "heat-transfer-oil":     "/images/products/heat_transfer_oil.png",
+  "rust-preventive-oil":   "/images/products/rust_preventive_oil.png",
+  "spindle-oil":           "/images/products/spindle_oil.png",
+  // Textile units
+  "spinning-unit":         "/images/products/spinning_unit.png",
+  "sizing-unit":           "/images/products/sizing_unit.png",
+  "weaving-unit":          "/images/products/weaving_unit.png",
+  "dyeing-unit":           "/images/products/dyeing_unit.png",
+  "knitting-unit":         "/images/products/knitting_unit.png",
+  // Metal Working
+  "cutting-oil":           "/images/products/cutting_oil.png",
+  "neat-cutting-oil":      "/images/products/neat_cutting_oil.png",
+  "quenching-oil":         "/images/products/quenching_oil.png",
+  // Specialty
+  "grease":                "/images/products/grease_oil.png",
+  "specialty-greases":     "/images/products/specialty_greases_oil.png",
+  "specialty-oils":        "/images/products/specialty_oil.png",
+};
+
+// ─────────────────────────────────────────
+// Grade Card — mini image + grade name
+// ─────────────────────────────────────────
+/** Converts a grade string to a predictable filename slug */
+function gradeToSlug(grade: string): string {
+  return grade
+    .toLowerCase()
+    .replace(/\+/g, "_plus")
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/_+/g, "_")
+    .replace(/^_|_$/g, "");
+}
+
+const GradeCard = memo(function GradeCard({
+  grade,
+  productId,
+}: {
+  grade: string;
+  productId: string;
+}) {
+  const slug = gradeToSlug(grade);
+
+  // Try multiple filename variants — lowercase slug, uppercase slug, .jpg, .png, .jfif
+  const upperSlug = grade
+    .replace(/\+/g, "_plus")
+    .replace(/[^a-zA-Z0-9]+/g, "_")
+    .replace(/_+/g, "_")
+    .replace(/^_|_$/g, "");
+
+  const attempts = [
+    `/images/grades/${productId}/${slug}.jpg`,
+    `/images/grades/${productId}/${slug}.png`,
+    `/images/grades/${productId}/${slug}.jfif`,
+    `/images/grades/${productId}/${upperSlug}.jpg`,
+    `/images/grades/${productId}/${upperSlug}.png`,
+    `/images/grades/${productId}/${upperSlug}.jfif`,
+  ];
+
+  const [attemptIdx, setAttemptIdx] = React.useState<number>(0);
+  const imgSrc = attemptIdx < attempts.length ? attempts[attemptIdx] : null;
+
+  const handleError = () => {
+    setAttemptIdx((prev) => prev + 1);
+  };
+
+  return (
+    <div className="group flex flex-col rounded-xl overflow-hidden border border-white/[0.08] hover:border-[#d4a435]/40 bg-[#0b1525] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/40">
+      {/* Product image — full container visible, no crop */}
+      <div
+        className="relative w-full overflow-hidden flex items-center justify-center"
+        style={{
+          height: "120px",
+          background: "linear-gradient(135deg, #0a1624 0%, #0f1f35 50%, #0a1624 100%)",
+        }}
+      >
+        {imgSrc ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={imgSrc}
+            alt={grade}
+            onError={handleError}
+            className="w-full h-full transition-transform duration-300 group-hover:scale-105"
+            style={{
+              objectFit: "contain",
+              objectPosition: "center",
+              padding: "8px",
+            }}
+          />
+        ) : (
+          /* Clean card slot for manual user upload */
+          <div className="flex flex-col items-center justify-center gap-1.5 select-none">
+            <svg className="w-6 h-6 text-[#d4a435]/40 group-hover:text-[#d4a435]/70 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <span className="text-[9px] text-white/30 font-medium tracking-wide">Photo Slot</span>
+          </div>
+        )}
+        {/* Subtle bottom fade only */}
+        <div
+          className="absolute bottom-0 left-0 right-0 h-5 pointer-events-none"
+          style={{ background: "linear-gradient(to bottom, transparent, rgba(11,21,37,0.6))" }}
+        />
+        {/* Grade badge */}
+        <div className="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded bg-black/55 backdrop-blur-sm border border-white/10 text-[8px] font-bold text-[#d4a435] uppercase tracking-wider">
+          Grade
+        </div>
+      </div>
+      {/* Grade name */}
+      <div className="px-3 py-2 border-t border-white/[0.05]">
+        <p className="text-[#d4a435] text-[11.5px] font-semibold tracking-wide leading-tight">{grade}</p>
+      </div>
+    </div>
+  );
+});
+
+// ─────────────────────────────────────────
+// Enquiry Section — full size (no-grade products)
 // ─────────────────────────────────────────
 interface EnquirySectionProps {
   productName: string;
@@ -196,6 +327,38 @@ const EnquirySection = memo(function EnquirySection({
           Send Email Enquiry
         </a>
       </div>
+    </div>
+  );
+});
+
+// ─────────────────────────────────────────
+// Enquiry Bar — compact, used below grades
+// ─────────────────────────────────────────
+const EnquiryBar = memo(function EnquiryBar({ productName }: { productName: string }) {
+  const whatsappUrl = `https://wa.me/${COMPANY.contact.whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent(
+    `Hello SVE, I would like to enquire about ${productName}.`
+  )}`;
+  const mailUrl = `mailto:${COMPANY.contact.email}?subject=Enquiry%3A%20${encodeURIComponent(productName)}`;
+
+  return (
+    <div className="mt-6 flex items-center gap-2.5 flex-wrap">
+      <span className="text-white/35 text-[11px] font-medium uppercase tracking-wider mr-1">Enquire:</span>
+      <a
+        href={whatsappUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#25D366]/90 hover:bg-[#22c55e] text-white text-[11.5px] font-semibold transition-all duration-200 hover:-translate-y-px shadow-sm"
+      >
+        <WhatsAppIcon />
+        WhatsApp
+      </a>
+      <a
+        href={mailUrl}
+        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#0f172a] hover:bg-[#1a2744] text-white text-[11.5px] font-semibold border border-[#d4a435]/20 hover:border-[#d4a435]/40 transition-all duration-200 hover:-translate-y-px"
+      >
+        <MailIcon />
+        Email
+      </a>
     </div>
   );
 });
@@ -323,41 +486,7 @@ function CategoriesView({ onSelect }: CategoriesViewProps) {
   );
 }
 
-// ─────────────────────────────────────────
-// Level 2 — Product Type Images Map
-// ─────────────────────────────────────────
-/** Map product-type id → public image path. Real photos where available, SVG placeholders otherwise. */
-const PRODUCT_TYPE_IMAGES: Record<string, string> = {
-  // Automotive (real photo for engine oil)
-  "engine-oil":            "/images/products/engine_oil.jpg",
-  "gear-oil":              "/images/products/gear_oil.png",
-  "hydraulic-oil":         "/images/products/hydraulic_oil.png",
-  "hlp-hydraulic-oil":     "/images/products/hlp_hydraulic_oil.png",
-  "brake-oil":             "/images/products/brake_oil.png",
-  "transmission-oil":      "/images/products/transmission_oil.png",
-  "screw-compressor-oil":  "/images/products/screw_compressor_oil.png",
-  // Industrial
-  "turbine-oil":           "/images/products/turbine_oil.png",
-  "compressor-oil":        "/images/products/compressor_oil.png",
-  "transformer-oil":       "/images/products/transformer_oil.png",
-  "heat-transfer-oil":     "/images/products/heat_transfer_oil.png",
-  "rust-preventive-oil":   "/images/products/rust_preventive_oil.png",
-  "spindle-oil":           "/images/products/spindle_oil.png",
-  // Textile units
-  "spinning-unit":         "/images/products/spinning_unit.png",
-  "sizing-unit":           "/images/products/sizing_unit.png",
-  "weaving-unit":          "/images/products/weaving_unit.png",
-  "dyeing-unit":           "/images/products/dyeing_unit.png",
-  "knitting-unit":         "/images/products/knitting_unit.png",
-  // Metal Working
-  "cutting-oil":           "/images/products/cutting_oil.png",
-  "neat-cutting-oil":      "/images/products/neat_cutting_oil.png",
-  "quenching-oil":         "/images/products/quenching_oil.png",
-  // Specialty
-  "grease":                "/images/products/grease_oil.png",
-  "specialty-greases":     "/images/products/specialty_greases_oil.png",
-  "specialty-oils":        "/images/products/specialty_oil.png",
-};
+
 
 // ─────────────────────────────────────────
 // Level 2 — Product Type Card
@@ -381,9 +510,22 @@ const TypeCard = memo(function TypeCard({ type, onClick }: TypeCardProps) {
 
   const imageSrc = PRODUCT_TYPE_IMAGES[type.id] ?? null;
 
+  /** For no-grade products clicking "Enquire" scrolls to #contact */
+  const handleClick = () => {
+    const noGrades = !isTextileUnit && gradeCount === 0;
+    if (noGrades) {
+      const el = document.getElementById("contact");
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+        return;
+      }
+    }
+    onClick();
+  };
+
   return (
     <button
-      onClick={onClick}
+      onClick={handleClick}
       className="group relative text-left rounded-2xl overflow-hidden border border-white/[0.07] hover:border-[#d4a435]/40 bg-[#0b1525] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-black/50 focus:outline-none focus:ring-2 focus:ring-[#d4a435]/30"
       aria-label={`View ${type.name}`}
     >
@@ -496,7 +638,12 @@ const SubItemCard = memo(function SubItemCard({ item }: SubItemCardProps) {
     <div className="rounded-xl border border-white/[0.07] bg-[#0b1525] p-5">
       {/* Header */}
       <div className="flex items-center gap-3 mb-4">
-        <span className="text-2xl">{item.icon}</span>
+        <div className="w-8 h-8 rounded-lg bg-[#071322] border border-[#d4a435]/30 flex items-center justify-center shrink-0">
+          <svg className="w-4 h-4 text-[#d4a435]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+        </div>
         <h4
           className="text-white font-bold text-[14px] leading-snug"
           style={{ fontFamily: "var(--font-display)" }}
@@ -547,24 +694,63 @@ function GradesView({ category, type, onBack }: GradesViewProps) {
     type.gradeGroups &&
     type.gradeGroups.some((g) => g.grades.length > 0);
 
+  const typeImage = PRODUCT_TYPE_IMAGES[type.id] ?? null;
+
   return (
     <div>
       <BackButton label={`Back to ${category.name}`} onClick={onBack} />
 
-      {/* Product type header */}
-      <div className="mb-8">
-        <div className="inline-flex items-center gap-3 mb-3">
-          <span className="text-4xl">{type.icon}</span>
-          <h3
-            className="text-white font-black text-2xl sm:text-3xl"
-            style={{ fontFamily: "var(--font-display)" }}
-          >
-            {type.name}
-          </h3>
+      {/* Product type header — Executive corporate design */}
+      <div className="mb-8 rounded-r-2xl rounded-l-md border-l-4 border-[#d4a435] bg-gradient-to-r from-[#0b1525] via-[#0d1a2e] to-[#0b1525]/60 p-6 border-y border-r border-white/[0.07] shadow-2xl relative overflow-hidden">
+        {/* Background ambient glow */}
+        <div
+          className="absolute -top-12 -left-12 w-48 h-48 rounded-full pointer-events-none opacity-20"
+          style={{ background: "radial-gradient(circle, #d4a435 0%, transparent 70%)" }}
+        />
+
+        <div className="relative flex flex-col sm:flex-row sm:items-center gap-5">
+          {/* Real product photo badge instead of cartoon emoji */}
+          {typeImage ? (
+            <div className="relative w-16 h-16 rounded-xl border border-[#d4a435]/35 bg-[#071322] p-1.5 shadow-lg shadow-black/50 overflow-hidden shrink-0 flex items-center justify-center group">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={typeImage}
+                alt={type.name}
+                className="w-full h-full object-contain drop-shadow"
+              />
+              <div className="absolute inset-0 bg-[#d4a435]/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+            </div>
+          ) : (
+            <div className="w-14 h-14 rounded-xl border border-[#d4a435]/30 bg-[#0f1e36] flex items-center justify-center shrink-0">
+              <svg className="w-7 h-7 text-[#d4a435]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L5.595 15.12a2 2 0 00-1.794.795 2 2 0 00.326 2.502l1.988 1.988a2 2 0 002.502.326l.477-.239a6 6 0 013.86-.517l.318-.158a6 6 0 003.86-.517l2.387.477a2 2 0 001.794-.795 2 2 0 00-.326-2.502l-1.988-1.988z" />
+              </svg>
+            </div>
+          )}
+
+          <div className="flex-1">
+            {/* Category label badge */}
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#d4a435]" />
+              <span className="text-[#d4a435] text-[11px] font-bold tracking-[0.2em] uppercase">
+                {category.name}
+              </span>
+            </div>
+
+            {/* Premium title */}
+            <h3
+              className="text-white font-black text-2xl sm:text-3xl tracking-tight mb-1.5"
+              style={{ fontFamily: "var(--font-display)" }}
+            >
+              {type.name}
+            </h3>
+
+            {/* Description */}
+            <p className="text-white/50 text-[13.5px] leading-relaxed max-w-2xl">
+              {type.shortDesc}
+            </p>
+          </div>
         </div>
-        <p className="text-white/45 text-[14px] leading-relaxed max-w-2xl">
-          {type.shortDesc}
-        </p>
       </div>
 
       {/* ── Textile Unit: Sub-items grid ── */}
@@ -579,10 +765,10 @@ function GradesView({ category, type, onBack }: GradesViewProps) {
         </>
       )}
 
-      {/* ── Regular: Grade groups ── */}
+      {/* ── Regular: Grade groups with mini GradeCards ── */}
       {hasGrades && type.gradeGroups && (
         <>
-          <div className="space-y-8 max-w-3xl">
+          <div className="space-y-8">
             {type.gradeGroups.map((group, gi) => (
               <div key={gi}>
                 {group.groupName && (
@@ -594,21 +780,41 @@ function GradesView({ category, type, onBack }: GradesViewProps) {
                     <span className="flex-1 h-px bg-[#d4a435]/10" />
                   </div>
                 )}
-                <div className="flex flex-wrap gap-2.5">
+                {/* Mini grade cards grid */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
                   {group.grades.map((grade) => (
-                    <GradeChip key={grade} grade={grade} />
+                    <GradeCard key={grade} grade={grade} productId={type.id} />
                   ))}
                 </div>
               </div>
             ))}
           </div>
-          <EnquirySection productName={type.name} />
+          {/* Compact enquiry bar below grades */}
+          <EnquiryBar productName={type.name} />
         </>
       )}
 
-      {/* ── No grades: Contact CTA ── */}
+      {/* ── No grades: scroll to contact CTA ── */}
       {!isTextileUnit && !hasGrades && (
-        <EnquirySection productName={type.name} showContactMessage />
+        <div className="mt-6 rounded-2xl border border-white/8 bg-[#0b1525] p-6">
+          <p className="text-white/45 text-sm leading-relaxed mb-5">
+            Grades and specifications for{" "}
+            <span className="text-white/70 font-semibold">{type.name}</span>{" "}
+            are available on request. Get in touch with our team.
+          </p>
+          <button
+            onClick={() => {
+              const el = document.getElementById("contact");
+              if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+            }}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#d4a435] hover:bg-[#c49328] text-[#0f172a] font-bold text-sm transition-all duration-200 hover:-translate-y-0.5 shadow-md"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+            Contact Us
+          </button>
+        </div>
       )}
     </div>
   );

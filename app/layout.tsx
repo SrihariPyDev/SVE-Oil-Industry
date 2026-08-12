@@ -46,6 +46,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${plusJakartaSans.variable} ${outfit.variable} scroll-smooth`}>
+      <head>
+        {/* Instant WhatsApp & Email link preconnect */}
+        <link rel="preconnect" href="https://wa.me" />
+        <link rel="dns-prefetch" href="https://wa.me" />
+        <link rel="preconnect" href="https://api.whatsapp.com" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+      </head>
       <body className="font-sans antialiased">{children}</body>
     </html>
   );
