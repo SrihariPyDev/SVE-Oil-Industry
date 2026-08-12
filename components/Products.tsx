@@ -538,6 +538,8 @@ const TypeCard = memo(function TypeCard({ type, onClick }: TypeCardProps) {
             <img
               src={imageSrc}
               alt={type.name}
+              loading="lazy"
+              decoding="async"
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             />
           ) : (
@@ -545,6 +547,7 @@ const TypeCard = memo(function TypeCard({ type, onClick }: TypeCardProps) {
               src={imageSrc}
               alt={type.name}
               fill
+              loading="lazy"
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
               className="object-cover transition-transform duration-500 group-hover:scale-105"
             />

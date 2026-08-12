@@ -54,6 +54,8 @@
 html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
+  /* Prevent scroll chaining — keeps page scroll snappy */
+  overscroll-behavior: none;
 }
 
 body {
@@ -63,23 +65,34 @@ body {
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* GPU-composited scroll layer */
+  transform: translateZ(0);
 }
 
-/* Fast touch response (removes 300ms tap delay on mobile & desktop buttons) */
-button, a, select, input {
+/* Fast touch response — removes 300ms tap delay everywhere */
+button, a, select, input, textarea {
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Hardware accelerated image rendering */
+/* Images & videos: lazy-decoded, GPU accelerated */
+img {
+  decoding: async;
+}
 img, video {
-  content-visibility: auto;
+  contain: content;
 }
 
-/* Performance GPU acceleration utilities */
+/* Section scroll containment — sections paint independently */
+section {
+  contain: layout style;
+}
+
+/* GPU acceleration utility */
 .gpu-layer {
   transform: translateZ(0);
   backface-visibility: hidden;
+  will-change: transform;
 }
 
 /* Updated font utility classes */

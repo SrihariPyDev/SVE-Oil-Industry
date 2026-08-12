@@ -93,6 +93,7 @@ function BrandCard({ brand, index }: { brand: typeof BRANDS[0]; index: number })
             alt={`${brand.name} logo`}
             fill
             sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
+            loading="lazy"
             className="object-contain p-4 group-hover:scale-105 transition-transform duration-300"
             onError={() => setImgError(true)}
           />
