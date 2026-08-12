@@ -3,53 +3,52 @@
 import React, { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 
-// ─── Phase machine ────────────────────────────────────────────
-// "bg"     0 ms       : dark blue panel sweeps RIGHT → LEFT (550 ms)
-// "zoom"   1 000 ms   : logo slow-zooms in at centre (800 ms)
-// "hold"   1 800 ms   : frozen at centre for exactly 2 000 ms
-// "flight" 3 800 ms   : logo flies to navbar logo position (650 ms)
-// unmount  4 450 ms
-// ─────────────────────────────────────────────────────────────
+// ─── TRENDING PREMIUM: Cinematic Split-Panel Reveal ──────────────
+//
+// Timeline:
+//  0 ms       : Full dark screen visible instantly
+//  150 ms     : Gold loading line sweeps left → right (900ms)
+//  800 ms     : Logo fades + scales in (500ms)
+//  1 300 ms   : Company name slides up (400ms)
+//  1 700 ms   : Hold — shimmer loops on logo
+//  3 000 ms   : SPLIT EXIT — top panel flies up, bottom flies down
+//               Logo simultaneously flies to navbar
+//  3 700 ms   : Unmount
+// ──────────────────────────────────────────────────────────────────
 
-type Phase = "bg" | "zoom" | "hold" | "flight" | "done";
+type Phase = "idle" | "bar" | "logo" | "text" | "hold" | "exit" | "done";
 
 export default function Preloader() {
-  const [phase, setPhase]               = useState<Phase>("bg");
-  const [mounted, setMounted]           = useState(true);
-  const [flightStyle, setFlightStyle]   = useState<React.CSSProperties>({});
-  const [bgFade, setBgFade]             = useState(false);
-  const logoRef  = useRef<HTMLDivElement>(null);
+  const [mounted, setMounted]             = useState(true);
+  const [phase, setPhase]                 = useState<Phase>("idle");
+  const [flightStyle, setFlightStyle]     = useState<React.CSSProperties>({});
+  const logoRef   = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-
-    // Respect reduced-motion preference
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       setMounted(false);
       return;
     }
 
-    // 1 s  → start logo zoom-in
-    const t1 = setTimeout(() => setPhase("zoom"), 1000);
+    const t1 = setTimeout(() => setPhase("bar"),  150);
+    const t2 = setTimeout(() => setPhase("logo"), 800);
+    const t3 = setTimeout(() => setPhase("text"), 1300);
+    const t4 = setTimeout(() => setPhase("hold"), 1700);
 
-    // 1.8 s → logo is fully visible, hold it
-    const t2 = setTimeout(() => setPhase("hold"), 1800);
+    const t5 = setTimeout(() => {
+      const nav   = document.getElementById("navbar-logo-container");
+      const logo  = logoRef.current;
 
-    // 3.8 s → fly to navbar
-    const t3 = setTimeout(() => {
-      const navLogo  = document.getElementById("navbar-logo-container");
-      const logoEl   = logoRef.current;
-
-      if (navLogo && logoEl) {
-        const nr = navLogo.getBoundingClientRect();
-        const lr = logoEl.getBoundingClientRect();
+      if (nav && logo) {
+        const nr = nav.getBoundingClientRect();
+        const lr = logo.getBoundingClientRect();
         const dx = (nr.left + nr.width  / 2) - (lr.left + lr.width  / 2);
         const dy = (nr.top  + nr.height / 2) - (lr.top  + lr.height / 2);
         const sc = nr.width / lr.width;
-
         setFlightStyle({
           transform : `translate3d(${dx}px,${dy}px,0) scale(${sc})`,
-          opacity   : 0.9,
+          opacity   : 0.95,
           transition: "transform 0.65s cubic-bezier(0.16,1,0.3,1), opacity 0.65s ease-in-out",
         });
       } else {
@@ -59,169 +58,236 @@ export default function Preloader() {
           transition: "transform 0.65s ease-in-out, opacity 0.65s ease-in-out",
         });
       }
+      setPhase("exit");
+    }, 3000);
 
-      setBgFade(true);
-      setPhase("flight");
-    }, 3800);
+    const t6 = setTimeout(() => { setPhase("done"); setMounted(false); }, 3750);
 
-    // 4.45 s → unmount
-    const t4 = setTimeout(() => { setPhase("done"); setMounted(false); }, 4450);
-
-    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4); };
+    return () => {
+      [t1, t2, t3, t4, t5, t6].forEach(clearTimeout);
+    };
   }, []);
 
   if (!mounted) return null;
 
-  // ── Logo animation style per phase ───────────────────────────
-  const logoStyle: React.CSSProperties =
-    phase === "flight" ? flightStyle
-    : phase === "zoom"
-      ? {
-          animation : "sveZoomIn 0.8s cubic-bezier(0.22,1,0.36,1) forwards",
-          willChange: "transform,opacity",
-        }
-      : phase === "hold"
-      ? { transform: "scale(1)", opacity: 1 }
-      : /* bg phase — logo hidden */ { opacity: 0, transform: "scale(0)" };
+  const showLogo  = phase === "logo" || phase === "text" || phase === "hold" || phase === "exit";
+  const showText  = phase === "text" || phase === "hold" || phase === "exit";
+  const isExit    = phase === "exit" || phase === "done";
 
   return (
     <>
-      {/* ── Full-screen dark-blue panel ───────────────────── */}
+      {/* ── TOP PANEL ───────────────────────────────────────────── */}
       <div
         aria-hidden="true"
         style={{
           position  : "fixed",
-          inset     : 0,
-          zIndex    : 99999,
-          background: "radial-gradient(ellipse 90% 80% at 50% 50%, #0d2a45 0%, #071929 50%, #040f1a 100%)",
-          // Sweep in from RIGHT → LEFT
-          animation : "sveBgSweep 0.55s cubic-bezier(0.16,1,0.3,1) both",
-          // When flight phase starts, fade the whole panel out
-          opacity   : bgFade ? 0 : 1,
-          transition: bgFade ? "opacity 0.65s ease-out" : "none",
-          willChange: "transform,opacity",
+          top: 0, left: 0, right: 0,
+          height    : "50vh",
+          zIndex    : 99998,
+          background: "linear-gradient(to bottom, #040f1a 0%, #071929 100%)",
+          transform : isExit ? "translateY(-101%)" : "translateY(0)",
+          transition: isExit ? "transform 0.72s cubic-bezier(0.76,0,0.24,1)" : "none",
+          willChange: "transform",
           pointerEvents: "none",
         }}
       >
-        {/* ── Soft radial glow behind logo ──────────────── */}
-        <div
-          style={{
-            position    : "absolute",
-            inset       : 0,
-            display     : "flex",
-            alignItems  : "center",
-            justifyContent: "center",
-            pointerEvents: "none",
-          }}
-        >
-          <div
-            style={{
-              width       : 480,
-              height      : 480,
-              borderRadius: "50%",
-              background  : "radial-gradient(circle, rgba(16,185,129,0.15) 0%, rgba(30,64,175,0.18) 45%, transparent 70%)",
-              animation   : "sveGlow 4s ease-in-out infinite",
-              willChange  : "opacity,transform",
-            }}
-          />
+        {/* subtle horizontal scan line */}
+        <div style={{
+          position  : "absolute",
+          bottom    : 0, left: 0, right: 0,
+          height    : "1px",
+          background: "linear-gradient(90deg, transparent, rgba(212,164,53,0.4) 50%, transparent)",
+        }} />
+      </div>
+
+      {/* ── BOTTOM PANEL ────────────────────────────────────────── */}
+      <div
+        aria-hidden="true"
+        style={{
+          position  : "fixed",
+          bottom: 0, left: 0, right: 0,
+          height    : "50vh",
+          zIndex    : 99998,
+          background: "linear-gradient(to top, #040f1a 0%, #071929 100%)",
+          transform : isExit ? "translateY(101%)" : "translateY(0)",
+          transition: isExit ? "transform 0.72s cubic-bezier(0.76,0,0.24,1)" : "none",
+          willChange: "transform",
+          pointerEvents: "none",
+        }}
+      >
+        {/* subtle horizontal scan line */}
+        <div style={{
+          position  : "absolute",
+          top       : 0, left: 0, right: 0,
+          height    : "1px",
+          background: "linear-gradient(90deg, transparent, rgba(212,164,53,0.4) 50%, transparent)",
+        }} />
+      </div>
+
+      {/* ── CENTER STAGE (always above panels) ──────────────────── */}
+      <div
+        aria-hidden="true"
+        style={{
+          position      : "fixed",
+          inset         : 0,
+          zIndex        : 99999,
+          display       : "flex",
+          flexDirection : "column",
+          alignItems    : "center",
+          justifyContent: "center",
+          pointerEvents : "none",
+        }}
+      >
+        {/* ── GOLD LOADING LINE ───────────────────────────────── */}
+        <div style={{
+          width   : "clamp(200px,30vw,360px)",
+          height  : "2px",
+          background: "#0d1e30",
+          borderRadius: "2px",
+          overflow: "hidden",
+          marginBottom: "2.5rem",
+          opacity : isExit ? 0 : 1,
+          transition: isExit ? "opacity 0.2s ease" : "none",
+        }}>
+          <div style={{
+            height    : "100%",
+            background: "linear-gradient(90deg, transparent, #d4a435, #f5dc80, #d4a435, transparent)",
+            animation : phase !== "idle" ? "sveLine 0.9s cubic-bezier(0.22,1,0.36,1) forwards" : "none",
+            transform : phase === "idle" ? "translateX(-100%)" : undefined,
+          }} />
         </div>
 
-        {/* ── Logo centred ──────────────────────────────── */}
+        {/* ── SVE LOGO ────────────────────────────────────────── */}
         <div
+          ref={logoRef}
           style={{
-            position      : "absolute",
-            inset         : 0,
-            display       : "flex",
-            alignItems    : "center",
-            justifyContent: "center",
+            position : "relative",
+            width    : "clamp(140px,18vw,220px)",
+            height   : "clamp(140px,18vw,220px)",
+            opacity  : showLogo ? 1 : 0,
+            transform: showLogo ? "scale(1) translateY(0)" : "scale(0.6) translateY(20px)",
+            transition: showLogo
+              ? "opacity 0.55s ease, transform 0.55s cubic-bezier(0.34,1.56,0.64,1)"
+              : "none",
+            willChange: "transform,opacity",
+            ...(isExit ? flightStyle : {}),
           }}
         >
-          <div
-            ref={logoRef}
+          <Image
+            src="/images/logo-new.png"
+            alt="Sri Venkateswara Enterprises"
+            fill
+            priority
+            sizes="220px"
             style={{
-              width     : "clamp(160px,22vw,260px)",
-              height    : "clamp(160px,22vw,260px)",
-              willChange: "transform,opacity",
-              ...logoStyle,
+              objectFit: "contain",
+              filter   : "drop-shadow(0 0 40px rgba(212,164,53,0.35)) drop-shadow(0 0 80px rgba(30,64,175,0.25))",
             }}
-          >
-            <div style={{ position: "relative", width: "100%", height: "100%" }}>
+          />
 
-              {/* SVE Logo */}
-              <Image
-                src="/images/logo-new.png"
-                alt="Sri Venkateswara Enterprises"
-                fill
-                priority
-                sizes="260px"
-                style={{
-                  objectFit: "contain",
-                  filter   : "drop-shadow(0 0 32px rgba(16,185,129,0.5)) drop-shadow(0 8px 24px rgba(30,64,175,0.4))",
-                }}
-              />
-
-              {/* Golden shimmer sweep — masked to logo shape */}
-              {(phase === "hold" || phase === "zoom") && (
-                <div
-                  style={{
-                    position        : "absolute",
-                    inset           : 0,
-                    maskImage       : "url(/images/logo-new.png)",
-                    WebkitMaskImage : "url(/images/logo-new.png)",
-                    maskSize        : "contain",
-                    WebkitMaskSize  : "contain",
-                    maskRepeat      : "no-repeat",
-                    WebkitMaskRepeat: "no-repeat",
-                    maskPosition    : "center",
-                    WebkitMaskPosition: "center",
-                    overflow        : "hidden",
-                  }}
-                >
-                  <div
-                    style={{
-                      position  : "absolute",
-                      top       : 0,
-                      left      : "-100%",
-                      width     : "200%",
-                      height    : "100%",
-                      background: "linear-gradient(115deg,transparent 20%,rgba(212,164,53,0.3) 40%,rgba(255,245,200,0.9) 50%,rgba(212,164,53,0.3) 60%,transparent 80%)",
-                      animation : "sveShimmer 1.5s ease-in-out infinite",
-                    }}
-                  />
-                </div>
-              )}
+          {/* Gold shimmer over logo */}
+          {(phase === "hold" || phase === "text") && (
+            <div style={{
+              position        : "absolute",
+              inset           : 0,
+              maskImage       : "url(/images/logo-new.png)",
+              WebkitMaskImage : "url(/images/logo-new.png)",
+              maskSize        : "contain",
+              WebkitMaskSize  : "contain",
+              maskRepeat      : "no-repeat",
+              WebkitMaskRepeat: "no-repeat",
+              maskPosition    : "center",
+              WebkitMaskPosition: "center",
+              overflow        : "hidden",
+            }}>
+              <div style={{
+                position  : "absolute",
+                inset     : 0,
+                background: "linear-gradient(105deg,transparent 25%,rgba(255,245,180,0.8) 50%,transparent 75%)",
+                animation : "sveShimmer 2s ease-in-out infinite",
+              }} />
             </div>
-          </div>
+          )}
+        </div>
+
+        {/* ── COMPANY NAME + TAGLINE ──────────────────────────── */}
+        <div style={{
+          marginTop : "1.8rem",
+          textAlign : "center",
+          opacity   : showText && !isExit ? 1 : 0,
+          transform : showText && !isExit ? "translateY(0)" : "translateY(12px)",
+          transition: "opacity 0.5s ease, transform 0.5s ease",
+        }}>
+          <p style={{
+            color       : "#d4a435",
+            fontSize    : "10.5px",
+            fontWeight  : 700,
+            letterSpacing: "0.32em",
+            textTransform: "uppercase",
+            fontFamily  : "var(--font-display), sans-serif",
+            marginBottom: "0.4rem",
+          }}>
+            Sri Venkateswara Enterprises
+          </p>
+          <div style={{
+            width     : "40px",
+            height    : "1px",
+            background: "linear-gradient(90deg,transparent,#d4a435,transparent)",
+            margin    : "0 auto",
+          }} />
+          <p style={{
+            color       : "rgba(255,255,255,0.35)",
+            fontSize    : "9px",
+            fontWeight  : 500,
+            letterSpacing: "0.2em",
+            textTransform: "uppercase",
+            fontFamily  : "var(--font-sans), sans-serif",
+            marginTop   : "0.4rem",
+          }}>
+            Industrial Lubricants
+          </p>
+        </div>
+
+        {/* ── BOTTOM PROGRESS DOTS ────────────────────────────── */}
+        <div style={{
+          position  : "absolute",
+          bottom    : "2.5rem",
+          display   : "flex",
+          gap       : "6px",
+          opacity   : showLogo && !isExit ? 1 : 0,
+          transition: "opacity 0.4s ease",
+        }}>
+          {[0, 1, 2].map((i) => (
+            <div key={i} style={{
+              width     : "5px",
+              height    : "5px",
+              borderRadius: "50%",
+              background: "#d4a435",
+              animation : `sveDot 1.2s ease-in-out ${i * 0.2}s infinite`,
+            }} />
+          ))}
         </div>
       </div>
 
-      {/* ── Keyframes ─────────────────────────────────────── */}
+      {/* ── KEYFRAMES ───────────────────────────────────────────── */}
       {/* eslint-disable-next-line react/no-unknown-property */}
       <style jsx global>{`
-        /* Background panel: slides in from right to left */
-        @keyframes sveBgSweep {
-          from { transform: translate3d(100%,0,0); }
-          to   { transform: translate3d(0,0,0); }
+        /* Gold bar sweeps left to right */
+        @keyframes sveLine {
+          from { transform: translateX(-100%); }
+          to   { transform: translateX(100%);  }
         }
 
-        /* Logo: slow premium zoom-in from nothing */
-        @keyframes sveZoomIn {
-          0%   { transform: scale(0.05); opacity: 0; }
-          40%  { opacity: 1; }
-          75%  { transform: scale(1.06); opacity: 1; }
-          100% { transform: scale(1.0);  opacity: 1; }
-        }
-
-        /* Ambient glow pulse */
-        @keyframes sveGlow {
-          0%,100% { opacity: 0.45; transform: scale(1);    }
-          50%      { opacity: 0.9;  transform: scale(1.1); }
-        }
-
-        /* Gold shimmer sweep across logo */
+        /* Gold shimmer across logo */
         @keyframes sveShimmer {
-          0%   { transform: translateX(-50%); }
-          100% { transform: translateX(55%);  }
+          0%   { transform: translateX(-120%); }
+          100% { transform: translateX(120%);  }
+        }
+
+        /* Pulsing dots */
+        @keyframes sveDot {
+          0%, 80%, 100% { transform: scale(0.6); opacity: 0.35; }
+          40%            { transform: scale(1.2); opacity: 1;    }
         }
       `}</style>
     </>

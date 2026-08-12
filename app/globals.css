@@ -80,12 +80,7 @@ img {
   decoding: async;
 }
 img, video {
-  contain: content;
-}
-
-/* Section scroll containment — sections paint independently */
-section {
-  contain: layout style;
+  contain: strict;
 }
 
 /* GPU acceleration utility */
