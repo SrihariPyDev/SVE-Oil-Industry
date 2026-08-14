@@ -41,11 +41,11 @@ export default function Footer() {
             <div className="flex items-center gap-3.5 mb-5">
               <div className="relative w-14 h-14 sm:w-16 sm:h-16 flex-shrink-0">
                 <Image
-                  src="/images/logo-new.png"
+                  src="/images/sve-brand-logo-pure.png"
                   alt="SVE Logo"
                   fill
                   sizes="64px"
-                  className="object-contain drop-shadow-md"
+                  className="object-contain"
                 />
               </div>
               <div>

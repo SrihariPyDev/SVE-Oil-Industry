@@ -59,7 +59,7 @@ export default function Hero() {
             <div className={`absolute inset-0 transition-transform duration-[8000ms] ease-out ${isActive ? "scale-110" : "scale-100"}`}>
               <video
                 ref={(el) => { videoRefs.current[i] = el; }}
-                src={(slide as any).videoUrl || ""}
+                src={(slide as any).videoUrl ? `${(slide as any).videoUrl}?v=2` : ""}
                 className="w-full h-full object-cover"
                 style={{ filter: "brightness(0.72) contrast(1.1) saturate(1.05)" }}
                 muted loop playsInline

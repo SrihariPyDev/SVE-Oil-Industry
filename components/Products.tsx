@@ -136,20 +136,28 @@ const BackButton = memo(function BackButton({ label, onClick }: BackButtonProps)
 const GradeChip = memo(function GradeChip({
   grade,
   compact = false,
+  onClick,
 }: {
   grade: string;
   compact?: boolean;
+  onClick?: () => void;
 }) {
   return (
-    <span
-      className={`inline-flex items-center font-semibold rounded-lg border border-[#d4a435]/25 bg-[#d4a435]/[0.07] text-[#d4a435] transition-all duration-200 hover:bg-[#d4a435]/[0.14] hover:border-[#d4a435]/50 select-none ${
+    <button
+      type="button"
+      onClick={onClick}
+      className={`inline-flex items-center gap-1.5 font-semibold rounded-lg border border-[#d4a435]/25 bg-[#d4a435]/[0.07] text-[#d4a435] transition-all duration-200 hover:bg-[#d4a435]/[0.18] hover:border-[#d4a435]/50 select-none cursor-pointer text-left ${
         compact
           ? "px-2.5 py-1 text-[11px] tracking-wide"
           : "px-3.5 py-1.5 text-[12.5px] tracking-wide"
       }`}
+      aria-label={`View specification for grade ${grade}`}
     >
-      {grade}
-    </span>
+      <span>{grade}</span>
+      <svg className="w-2.5 h-2.5 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    </button>
   );
 });
 
@@ -192,97 +200,48 @@ const PRODUCT_TYPE_IMAGES: Record<string, string> = {
 // ─────────────────────────────────────────
 // Grade Card — mini image + grade name
 // ─────────────────────────────────────────
-/** Converts a grade string to a predictable filename slug */
-function gradeToSlug(grade: string): string {
-  return grade
-    .toLowerCase()
-    .replace(/\+/g, "_plus")
-    .replace(/[^a-z0-9]+/g, "_")
-    .replace(/_+/g, "_")
-    .replace(/^_|_$/g, "");
+// ─────────────────────────────────────────
+// Grade Short Description Helper
+// ─────────────────────────────────────────
+function getGradeDescription(grade: string, productName?: string): string {
+  const g = grade.trim();
+
+  // Engine oils
+  if (g === "5W-30") return "Fully synthetic multi-grade engine oil designed for high fuel efficiency, rapid low-temperature cold start protection, and engine cleanliness in modern petrol & diesel vehicles.";
+  if (g === "15W-40") return "Heavy-duty multi-grade diesel engine lubricant providing outstanding wear protection, thermal stability, and soot control for commercial vehicles and generator sets.";
+  if (g === "CF-4") return "API CF-4 heavy-duty engine oil formulated for turbocharged and naturally aspirated diesel engines operating under severe duty conditions.";
+  if (g === "CH-4") return "API CH-4 multi-grade diesel lubricant optimized for high-speed four-stroke diesel engines meeting strict emission standards.";
+  if (g === "CI-4") return "API CI-4 heavy-duty diesel engine lubricant engineered for engines equipped with Exhaust Gas Recirculation (EGR) systems.";
+  if (g === "CI-4+") return "Enhanced API CI-4 Plus diesel lubricant offering superior shear stability, piston deposit control, and soot-induced viscosity control.";
+  if (g === "CJ-4") return "API CJ-4 low-SAPS heavy-duty diesel engine oil designed for advanced engines equipped with DPF and diesel particulate filters.";
+  if (g === "CK-4") return "API CK-4 next-generation diesel engine lubricant delivering enhanced oxidation stability, shear control, and wear protection.";
+
+  // Gear oils
+  if (g === "80W-90") return "Extreme-pressure (EP) automotive gear lubricant grade for manual transmissions, transaxles, and rear axle differentials.";
+  if (g === "85W-140") return "Heavy-duty extreme pressure gear oil formulated for commercial vehicle axles, differentials, and final drives under heavy load.";
+  if (g === "Mono Grade 90") return "Classic single-grade EP gear lubricant designed for manual gearboxes and steering boxes requiring API GL-4/GL-5 protection.";
+  if (g === "Mono Grade 140") return "High-viscosity heavy-duty gear lubricant for heavy commercial vehicle axles and industrial gearboxes under high load.";
+
+  // Hydraulics
+  if (g.includes("32")) return "ISO VG 32 anti-wear hydraulic oil grade designed for industrial hydraulic systems, high-pressure vane and piston pumps operating at low-to-medium ambient temperatures.";
+  if (g.includes("46")) return "ISO VG 46 premium anti-wear hydraulic fluid — standard viscosity choice for industrial manufacturing machinery, hydraulic presses, and injection molding.";
+  if (g.includes("68")) return "ISO VG 68 heavy-duty anti-wear hydraulic fluid for industrial machinery operating under high ambient temperatures and heavy continuous duty.";
+  if (g.includes("100")) return "ISO VG 100 industrial circulation & hydraulic oil grade for heavy machinery, enclosed gear units, and high-load hydraulic systems.";
+  if (g.includes("150")) return "ISO VG 150 industrial gear and circulating lubricant grade providing heavy film strength for spur, helical, and bevel gear sets.";
+  if (g.includes("220")) return "ISO VG 220 heavy-duty industrial gear oil grade for heavily loaded industrial drive gearboxes, mill drives, and conveyors.";
+  if (g.includes("320")) return "ISO VG 320 high-viscosity extreme-pressure gear lubricant for industrial gear drives subjected to extreme shock loads.";
+  if (g.includes("460")) return "ISO VG 460 extra heavy-duty industrial gear oil grade engineered for severe load conditions, slow-moving gears, and high temperature drives.";
+
+  // Brake oils & Transmissions
+  if (g.toUpperCase().includes("DOT 3")) return "Heavy-duty hydraulic brake fluid grade formulated for disc, drum, and ABS braking systems requiring DOT 3 performance.";
+  if (g.toUpperCase().includes("DOT 4")) return "High-boiling point synthetic brake fluid offering superior vapor-lock resistance for modern passenger & commercial vehicles.";
+  if (g.toUpperCase().includes("DEXRON II")) return "Automatic transmission fluid grade for passenger car & commercial automatic gearboxes and power steering systems.";
+  if (g.toUpperCase().includes("DEXRON III")) return "Premium multi-vehicle automatic transmission fluid providing smooth shifting performance and anti-shudder protection.";
+  if (g.toUpperCase().includes("UTTO")) return "Universal Tractor Transmission Oil grade for combined hydraulic, transmission, wet-brake, and final-drive tractor systems.";
+
+  // Default clean fallback
+  return `${g} is a high-performance industrial grade formulated for ${productName ?? "industrial"} applications. Available for bulk and barrel supply with guaranteed quality.`;
 }
-
-const GradeCard = memo(function GradeCard({
-  grade,
-  productId,
-}: {
-  grade: string;
-  productId: string;
-}) {
-  const slug = gradeToSlug(grade);
-
-  // Try multiple filename variants — lowercase slug, uppercase slug, .jpg, .png, .jfif
-  const upperSlug = grade
-    .replace(/\+/g, "_plus")
-    .replace(/[^a-zA-Z0-9]+/g, "_")
-    .replace(/_+/g, "_")
-    .replace(/^_|_$/g, "");
-
-  const attempts = [
-    `/images/grades/${productId}/${slug}.jpg`,
-    `/images/grades/${productId}/${slug}.png`,
-    `/images/grades/${productId}/${slug}.jfif`,
-    `/images/grades/${productId}/${upperSlug}.jpg`,
-    `/images/grades/${productId}/${upperSlug}.png`,
-    `/images/grades/${productId}/${upperSlug}.jfif`,
-  ];
-
-  const [attemptIdx, setAttemptIdx] = React.useState<number>(0);
-  const imgSrc = attemptIdx < attempts.length ? attempts[attemptIdx] : null;
-
-  const handleError = () => {
-    setAttemptIdx((prev) => prev + 1);
-  };
-
-  return (
-    <div className="group flex flex-col rounded-xl overflow-hidden border border-white/[0.08] hover:border-[#d4a435]/40 bg-[#0b1525] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/40">
-      {/* Product image — full container visible, no crop */}
-      <div
-        className="relative w-full overflow-hidden flex items-center justify-center"
-        style={{
-          height: "120px",
-          background: "linear-gradient(135deg, #0a1624 0%, #0f1f35 50%, #0a1624 100%)",
-        }}
-      >
-        {imgSrc ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={imgSrc}
-            alt={grade}
-            onError={handleError}
-            className="w-full h-full transition-transform duration-300 group-hover:scale-105"
-            style={{
-              objectFit: "contain",
-              objectPosition: "center",
-              padding: "8px",
-            }}
-          />
-        ) : (
-          /* Clean card slot for manual user upload */
-          <div className="flex flex-col items-center justify-center gap-1.5 select-none">
-            <svg className="w-6 h-6 text-[#d4a435]/40 group-hover:text-[#d4a435]/70 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            <span className="text-[9px] text-white/30 font-medium tracking-wide">Photo Slot</span>
-          </div>
-        )}
-        {/* Subtle bottom fade only */}
-        <div
-          className="absolute bottom-0 left-0 right-0 h-5 pointer-events-none"
-          style={{ background: "linear-gradient(to bottom, transparent, rgba(11,21,37,0.6))" }}
-        />
-        {/* Grade badge */}
-        <div className="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded bg-black/55 backdrop-blur-sm border border-white/10 text-[8px] font-bold text-[#d4a435] uppercase tracking-wider">
-          Grade
-        </div>
-      </div>
-      {/* Grade name */}
-      <div className="px-3 py-2 border-t border-white/[0.05]">
-        <p className="text-[#d4a435] text-[11.5px] font-semibold tracking-wide leading-tight">{grade}</p>
-      </div>
-    </div>
-  );
-});
 
 // ─────────────────────────────────────────
 // Enquiry Section — full size (no-grade products)
@@ -628,25 +587,132 @@ function TypesView({ category, onSelect, onBack }: TypesViewProps) {
 }
 
 // ─────────────────────────────────────────
-// Level 3 — Sub-Item Card (Textile units)
+// Grade Short Description Modal
+// ─────────────────────────────────────────
+const GradeModal = memo(function GradeModal({
+  grade,
+  productName,
+  onClose,
+}: {
+  grade: string;
+  productName: string;
+  onClose: () => void;
+}) {
+  const description = getGradeDescription(grade, productName);
+  const whatsappUrl = `https://wa.me/${COMPANY.contact.whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent(
+    `Hello Sri Venkateswara Enterprises, I am interested in ${productName} (Grade: ${grade}). Please share pricing and availability.`
+  )}`;
+
+  return (
+    <div
+      className="fixed inset-0 z-[999] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md animate-fade-in-up"
+      onClick={onClose}
+    >
+      <div
+        className="relative bg-[#061120] border border-[#d4a435]/40 rounded-t-2xl sm:rounded-2xl max-w-md w-full p-6 shadow-2xl overflow-hidden max-h-[90dvh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Top gold line */}
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#d4a435] to-transparent" />
+
+        {/* Header */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <span className="px-2.5 py-1 rounded-md bg-[#d4a435]/15 border border-[#d4a435]/30 text-[#d4a435] font-bold text-xs uppercase tracking-wider">
+              Grade Spec
+            </span>
+            <span className="text-white/40 text-xs font-medium">{productName}</span>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 rounded-full bg-white/[0.06] hover:bg-white/15 text-white/60 hover:text-white flex items-center justify-center transition-colors font-bold text-sm"
+            aria-label="Close specification"
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Grade Title */}
+        <h3
+          className="text-2xl font-black text-white mb-3 tracking-tight"
+          style={{ fontFamily: "var(--font-display)" }}
+        >
+          {grade}
+        </h3>
+
+        {/* Short Description — Deep dark executive box */}
+        <div className="bg-[#030914] border border-[#d4a435]/20 rounded-xl p-4 mb-6 shadow-inner">
+          <p className="text-white/85 text-sm leading-relaxed">
+            {description}
+          </p>
+        </div>
+
+        {/* Actions */}
+        <div className="flex gap-3">
+          <a
+            href={whatsappUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex-1 inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-[#25D366] hover:bg-[#22c55e] text-white font-bold text-xs transition-all shadow-md"
+          >
+            <WhatsAppIcon />
+            Enquire Grade
+          </a>
+          <button
+            onClick={onClose}
+            className="py-2.5 px-4 rounded-xl border border-white/15 hover:bg-white/10 text-white font-semibold text-xs transition-colors"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+// ─────────────────────────────────────────
+// Clean, Compact Grade Card (No images)
+// ─────────────────────────────────────────
+const GradeCard = memo(function GradeCard({
+  grade,
+  onClick,
+}: {
+  grade: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className="group relative flex items-center justify-between px-3.5 py-3 rounded-xl border border-white/[0.08] hover:border-[#d4a435]/60 bg-[#0b1525] hover:bg-[#0f1f35] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/40 text-left w-full select-none"
+      aria-label={`View specification for grade ${grade}`}
+    >
+      <span className="text-[#d4a435] text-[13px] font-bold tracking-wide group-hover:text-[#f5dc80] transition-colors">
+        {grade}
+      </span>
+      <div className="w-5 h-5 rounded-full bg-white/[0.04] group-hover:bg-[#d4a435]/15 flex items-center justify-center transition-colors shrink-0 ml-1.5">
+        <svg className="w-3 h-3 text-white/30 group-hover:text-[#d4a435] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </div>
+    </button>
+  );
+});
+
+// ─────────────────────────────────────────
+// Level 3 — Sub-Item Card (Textile units, No Icons)
 // ─────────────────────────────────────────
 interface SubItemCardProps {
   item: TextileSubItem;
+  onGradeClick?: (grade: string, productName: string) => void;
 }
 
-const SubItemCard = memo(function SubItemCard({ item }: SubItemCardProps) {
+const SubItemCard = memo(function SubItemCard({ item, onGradeClick }: SubItemCardProps) {
   const hasGrades = item.gradeGroups.some((g) => g.grades.length > 0);
 
   return (
     <div className="rounded-xl border border-white/[0.07] bg-[#0b1525] p-5">
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-4">
-        <div className="w-8 h-8 rounded-lg bg-[#071322] border border-[#d4a435]/30 flex items-center justify-center shrink-0">
-          <svg className="w-4 h-4 text-[#d4a435]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-        </div>
+      {/* Header — Icon removed */}
+      <div className="mb-4">
         <h4
           className="text-white font-bold text-[14px] leading-snug"
           style={{ fontFamily: "var(--font-display)" }}
@@ -666,7 +732,12 @@ const SubItemCard = memo(function SubItemCard({ item }: SubItemCardProps) {
               )}
               <div className="flex flex-wrap gap-2">
                 {group.grades.map((grade) => (
-                  <GradeChip key={grade} grade={grade} compact />
+                  <GradeChip
+                    key={grade}
+                    grade={grade}
+                    compact
+                    onClick={() => onGradeClick?.(grade, item.name)}
+                  />
                 ))}
               </div>
             </div>
@@ -682,7 +753,7 @@ const SubItemCard = memo(function SubItemCard({ item }: SubItemCardProps) {
 });
 
 // ─────────────────────────────────────────
-// Level 3 — Grades / Specifications View
+// Level 3 — Grades / Specifications View (No Icons)
 // ─────────────────────────────────────────
 interface GradesViewProps {
   category: ProductCategory;
@@ -697,13 +768,25 @@ function GradesView({ category, type, onBack }: GradesViewProps) {
     type.gradeGroups &&
     type.gradeGroups.some((g) => g.grades.length > 0);
 
-  const typeImage = PRODUCT_TYPE_IMAGES[type.id] ?? null;
+  const [activeGrade, setActiveGrade] = React.useState<{
+    grade: string;
+    productName: string;
+  } | null>(null);
 
   return (
     <div>
       <BackButton label={`Back to ${category.name}`} onClick={onBack} />
 
-      {/* Product type header — Executive corporate design */}
+      {/* Grade Short Description Modal */}
+      {activeGrade && (
+        <GradeModal
+          grade={activeGrade.grade}
+          productName={activeGrade.productName}
+          onClose={() => setActiveGrade(null)}
+        />
+      )}
+
+      {/* Product type header — Clean corporate design (No icons) */}
       <div className="mb-8 rounded-r-2xl rounded-l-md border-l-4 border-[#d4a435] bg-gradient-to-r from-[#0b1525] via-[#0d1a2e] to-[#0b1525]/60 p-6 border-y border-r border-white/[0.07] shadow-2xl relative overflow-hidden">
         {/* Background ambient glow */}
         <div
@@ -711,28 +794,8 @@ function GradesView({ category, type, onBack }: GradesViewProps) {
           style={{ background: "radial-gradient(circle, #d4a435 0%, transparent 70%)" }}
         />
 
-        <div className="relative flex flex-col sm:flex-row sm:items-center gap-5">
-          {/* Real product photo badge instead of cartoon emoji */}
-          {typeImage ? (
-            <div className="relative w-16 h-16 rounded-xl border border-[#d4a435]/35 bg-[#071322] p-1.5 shadow-lg shadow-black/50 overflow-hidden shrink-0 flex items-center justify-center group">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={typeImage}
-                alt={type.name}
-                className="w-full h-full object-contain drop-shadow"
-              />
-              <div className="absolute inset-0 bg-[#d4a435]/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-            </div>
-          ) : (
-            <div className="w-14 h-14 rounded-xl border border-[#d4a435]/30 bg-[#0f1e36] flex items-center justify-center shrink-0">
-              <svg className="w-7 h-7 text-[#d4a435]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L5.595 15.12a2 2 0 00-1.794.795 2 2 0 00.326 2.502l1.988 1.988a2 2 0 002.502.326l.477-.239a6 6 0 013.86-.517l.318-.158a6 6 0 003.86-.517l2.387.477a2 2 0 001.794-.795 2 2 0 00-.326-2.502l-1.988-1.988z" />
-              </svg>
-            </div>
-          )}
-
-          <div className="flex-1">
-            {/* Category label badge */}
+        <div className="relative">
+          {/* Category label badge */}
             <div className="flex items-center gap-2 mb-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-[#d4a435]" />
               <span className="text-[#d4a435] text-[11px] font-bold tracking-[0.2em] uppercase">
@@ -754,21 +817,24 @@ function GradesView({ category, type, onBack }: GradesViewProps) {
             </p>
           </div>
         </div>
-      </div>
 
       {/* ── Textile Unit: Sub-items grid ── */}
       {isTextileUnit && type.subItems && (
         <>
           <div className="grid sm:grid-cols-2 gap-4 mb-2">
             {type.subItems.map((item) => (
-              <SubItemCard key={item.id} item={item} />
+              <SubItemCard
+                key={item.id}
+                item={item}
+                onGradeClick={(g, name) => setActiveGrade({ grade: g, productName: name })}
+              />
             ))}
           </div>
           <EnquirySection productName={type.name} />
         </>
       )}
 
-      {/* ── Regular: Grade groups with mini GradeCards ── */}
+      {/* ── Regular: Grade groups with clean compact GradeCards ── */}
       {hasGrades && type.gradeGroups && (
         <>
           <div className="space-y-8">
@@ -783,10 +849,14 @@ function GradesView({ category, type, onBack }: GradesViewProps) {
                     <span className="flex-1 h-px bg-[#d4a435]/10" />
                   </div>
                 )}
-                {/* Mini grade cards grid */}
+                {/* Clean compact grade cards grid */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
                   {group.grades.map((grade) => (
-                    <GradeCard key={grade} grade={grade} productId={type.id} />
+                    <GradeCard
+                      key={grade}
+                      grade={grade}
+                      onClick={() => setActiveGrade({ grade, productName: type.name })}
+                    />
                   ))}
                 </div>
               </div>

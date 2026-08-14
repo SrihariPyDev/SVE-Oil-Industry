@@ -236,17 +236,13 @@ export default function Preloader() {
             >
               {/* Logo image */}
               <Image
-                src="/images/logo-new.png"
+                src="/images/sve-brand-logo-pure.png"
                 alt="Sri Venkateswara Enterprises"
                 fill
                 priority
                 sizes="(max-width: 480px) 100px, (max-width: 768px) 150px, 190px"
                 style={{
                   objectFit : "contain",
-                  filter    : isHold
-                    ? "drop-shadow(0 0 28px rgba(212,164,53,0.45)) drop-shadow(0 4px 18px rgba(30,64,175,0.35))"
-                    : "drop-shadow(0 0 10px rgba(212,164,53,0.2))",
-                  transition: "filter 0.6s ease",
                 }}
               />
 
@@ -257,8 +253,8 @@ export default function Preloader() {
                     position            : "absolute",
                     inset               : 0,
                     overflow            : "hidden",
-                    maskImage           : "url(/images/logo-new.png)",
-                    WebkitMaskImage     : "url(/images/logo-new.png)",
+                    maskImage           : "url(/images/sve-brand-logo-pure.png)",
+                    WebkitMaskImage     : "url(/images/sve-brand-logo-pure.png)",
                     maskSize            : "contain",
                     WebkitMaskSize      : "contain",
                     maskRepeat          : "no-repeat",
@@ -287,7 +283,7 @@ export default function Preloader() {
               marginTop : "clamp(1.2rem, 3.5vmin, 2rem)",
               textAlign : "center",
               // Constrain width to prevent overflow on tiny phones
-              maxWidth  : "min(320px, 88vw)",
+              maxWidth  : "min(380px, 90vw)",
               width     : "100%",
               opacity   : isHold && !isFlight ? 1 : 0,
               transform : isHold && !isFlight ? "translateY(0)" : "translateY(10px)",
@@ -297,13 +293,13 @@ export default function Preloader() {
             <p
               style={{
                 color         : "#d4a435",
-                fontSize      : "clamp(7.5px, 2vmin, 10.5px)",
-                fontWeight    : 700,
-                letterSpacing : "clamp(0.15em, 0.4vw, 0.3em)",
+                fontSize      : "clamp(13px, 2.8vmin, 18px)",
+                fontWeight    : 800,
+                letterSpacing : "clamp(0.12em, 0.3vw, 0.22em)",
                 textTransform : "uppercase",
                 fontFamily    : "var(--font-display, sans-serif)",
-                marginBottom  : "0.45rem",
-                lineHeight    : 1.4,
+                marginBottom  : "0.5rem",
+                lineHeight    : 1.3,
               }}
             >
               Sri Venkateswara Enterprises
@@ -319,8 +315,8 @@ export default function Preloader() {
             />
             <p
               style={{
-                color         : "rgba(255,255,255,0.28)",
-                fontSize      : "clamp(6.5px, 1.6vmin, 9px)",
+                color         : "rgba(255,255,255,0.45)",
+                fontSize      : "clamp(10px, 1.8vmin, 13px)",
                 fontWeight    : 500,
                 letterSpacing : "0.18em",
                 textTransform : "uppercase",

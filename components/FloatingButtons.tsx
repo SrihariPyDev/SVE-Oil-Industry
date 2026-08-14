@@ -15,10 +15,15 @@ export default function FloatingButtons() {
     >
       {/* WhatsApp */}
       <div className="relative group">
+        {/* Tooltip — shows ABOVE on mobile to avoid left overflow */}
         {showWATooltip && (
-          <div className="absolute right-full mr-3 top-1/2 -translate-y-1/2 whitespace-nowrap bg-[#0f172a] text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-lg pointer-events-none" style={{ fontFamily: "var(--font-display)" }}>
+          <div
+            className="absolute bottom-full mb-2 right-0 whitespace-nowrap bg-[#0f172a] text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-lg pointer-events-none sm:bottom-auto sm:top-1/2 sm:-translate-y-1/2 sm:right-full sm:mr-3 sm:mb-0"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
             WhatsApp Us
-            <span className="absolute left-full top-1/2 -translate-y-1/2 border-4 border-transparent border-l-[#0f172a]" />
+            {/* Arrow — only on sm+ */}
+            <span className="hidden sm:block absolute left-full top-1/2 -translate-y-1/2 border-4 border-transparent border-l-[#0f172a]" />
           </div>
         )}
         <div className="flex flex-col items-center gap-1">
@@ -29,6 +34,8 @@ export default function FloatingButtons() {
             aria-label="Chat on WhatsApp"
             onMouseEnter={() => setShowWATooltip(true)}
             onMouseLeave={() => setShowWATooltip(false)}
+            onFocus={() => setShowWATooltip(true)}
+            onBlur={() => setShowWATooltip(false)}
             className="relative flex items-center justify-center w-14 h-14 rounded-full bg-[#25D366] text-white shadow-xl hover:shadow-2xl hover:shadow-[#25D366]/30 transition-all duration-300 hover:-translate-y-1 hover:scale-105"
           >
             {/* Pulse ring */}
@@ -44,10 +51,13 @@ export default function FloatingButtons() {
 
       {/* Call */}
       <div className="relative group">
+        {/* Tooltip — shows ABOVE on mobile to avoid left overflow */}
         {showCallTooltip && (
-          <div className="absolute right-full mr-3 top-1/2 -translate-y-1/2 whitespace-nowrap bg-[#0f172a] text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-lg pointer-events-none">
+          <div
+            className="absolute bottom-full mb-2 right-0 whitespace-nowrap bg-[#0f172a] text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-lg pointer-events-none sm:bottom-auto sm:top-1/2 sm:-translate-y-1/2 sm:right-full sm:mr-3 sm:mb-0"
+          >
             {COMPANY.contact.phoneDisplay}
-            <span className="absolute left-full top-1/2 -translate-y-1/2 border-4 border-transparent border-l-[#0f172a]" />
+            <span className="hidden sm:block absolute left-full top-1/2 -translate-y-1/2 border-4 border-transparent border-l-[#0f172a]" />
           </div>
         )}
         <a
@@ -55,6 +65,8 @@ export default function FloatingButtons() {
           aria-label="Call us"
           onMouseEnter={() => setShowCallTooltip(true)}
           onMouseLeave={() => setShowCallTooltip(false)}
+          onFocus={() => setShowCallTooltip(true)}
+          onBlur={() => setShowCallTooltip(false)}
           className="flex items-center justify-center w-14 h-14 rounded-full text-white shadow-xl hover:shadow-2xl hover:shadow-[#0f172a]/30 transition-all duration-300 hover:-translate-y-1 hover:scale-105"
           style={{ background: "linear-gradient(135deg, #0f172a, #1a2744)", border: "1px solid rgba(212,164,53,0.3)" }}
         >

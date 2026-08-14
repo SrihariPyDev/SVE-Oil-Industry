@@ -104,11 +104,11 @@ export default function Navbar() {
                 }`}
               >
                 <Image
-                  src="/images/logo-new.png"
+                  src="/images/sve-brand-logo-pure.png"
                   alt="SVE Logo"
                   fill
                   sizes="(max-width: 640px) 92px, 116px"
-                  className="object-contain drop-shadow-xl"
+                  className="object-contain"
                   priority
                 />
               </div>
@@ -232,7 +232,7 @@ export default function Navbar() {
           <div className="flex items-center justify-between px-5 py-4 border-b border-[#0f172a]/8">
             <div className="flex items-center gap-2.5">
               <div className="relative w-14 h-14 flex-shrink-0">
-                <Image src="/images/logo-new.png" alt="SVE" fill sizes="56px" className="object-contain" />
+                <Image src="/images/sve-brand-logo-pure.png" alt="SVE" fill sizes="56px" className="object-contain" />
               </div>
               <div>
                 <div className="text-[#0f172a] font-black text-[13px] tracking-wider uppercase">Sri Venkateswara</div>

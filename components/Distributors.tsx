@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 
 export default function Distributors() {
   return (
@@ -78,15 +79,15 @@ export default function Distributors() {
                     minHeight: "180px",
                   }}
                 >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
+                  <Image
                     src="/images/brands/Apar.jpg"
                     alt="APAR Industries — Tomorrow's solutions today"
                     width={280}
                     height={140}
                     loading="eager"
-                    decoding="sync"
-                    className="w-56 sm:w-64 h-auto object-contain transition-transform duration-300 group-hover:scale-105"
+                    priority
+                    sizes="(max-width: 640px) 220px, 280px"
+                    className="w-52 sm:w-64 h-auto object-contain transition-transform duration-300 group-hover:scale-105"
                     style={{ display: "block" }}
                   />
                 </div>

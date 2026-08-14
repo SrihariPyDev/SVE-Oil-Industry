@@ -77,9 +77,23 @@ button, a, select, input, textarea {
 /* Images & videos: lazy-decoded, GPU accelerated */
 img {
   decoding: async;
+  max-width: 100%;
+  height: auto;
 }
-img, video {
-  contain: strict;
+video {
+  max-width: 100%;
+}
+
+/* Prevent any element from causing horizontal overflow on mobile */
+* {
+  min-width: 0;
+}
+
+/* Safely truncate long email/URL text on narrow screens */
+.break-words-safe {
+  overflow-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
 }
 
 /* GPU acceleration utility */
