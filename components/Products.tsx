@@ -344,7 +344,6 @@ const CATEGORY_IMAGES: Record<string, string> = {
   "pump-compressor":             "/images/products/cat_pump-compressor.png",
   agriculture:                   "/images/products/cat_agriculture.png",
   "rubber-industries":           "/images/products/cat_rubber-industries.png",
-  "lubricants-gear-hydraulic":   "/images/products/cat_lubricants-gear-hydraulic.png",
 };
 
 interface CategoryCardProps {

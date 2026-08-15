@@ -16,9 +16,8 @@
 //   5. Quarries & Blue Metals
 //   6. Injection Mouldings
 //   7. Pump & Compressor Manufacturers
-//   8. Agriculture
+//   8. Agricultural Machinery Manufacturers
 //   9. Rubber Industries
-//  10. Lubricants & Gear/Hydraulic Oils
 // ============================================================
 
 // ─────────────────────────────────────────
@@ -120,10 +119,10 @@ export const PRODUCT_CATALOGUE: ProductCategory[] = [
             gradeGroups: [
               {
                 grades: [
-                  "MP3",
                   "EP2",
-                  "High Temperature Grease",
+                  "MP3",
                   "Calcium Grease",
+                  "High Temperature Grease",
                 ],
               },
             ],
@@ -367,7 +366,17 @@ export const PRODUCT_CATALOGUE: ProductCategory[] = [
         icon: "🏎️",
         gradeGroups: [
           {
-            grades: ["5W-30", "15W-40", "20W-40", "CF-4", "CH-4", "CI-4", "CI-4+", "CJ-4", "CK-4"],
+            grades: [
+              "SAE 5W-30",
+              "SAE 15W-40",
+              "SAE 15W-40 CF-4",
+              "SAE 15W-40 CH-4",
+              "SAE 15W-40 CI-4",
+              "SAE 15W-40 CI-4+",
+              "SAE 15W-40 CJ-4",
+              "SAE 15W-40 CK-4",
+              "SAE 20W-40",
+            ],
           },
         ],
       },
@@ -379,7 +388,12 @@ export const PRODUCT_CATALOGUE: ProductCategory[] = [
         icon: "⚙️",
         gradeGroups: [
           {
-            grades: ["80W-90", "85W-140", "Mono Grade 90", "Mono Grade 140"],
+            groupName: "Multi-Grade",
+            grades: ["SAE 80W-90", "SAE 85W-140"],
+          },
+          {
+            groupName: "Mono Grade",
+            grades: ["SAE 90", "SAE 140"],
           },
         ],
       },
@@ -431,12 +445,12 @@ export const PRODUCT_CATALOGUE: ProductCategory[] = [
           {
             groupName: "Automatic Transmission Fluid (ATF)",
             grades: [
+              "ATF Type A",
               "ATF Dexron II",
               "ATF Dexron III",
               "ATF Dexron VI",
               "ATF Mercon V",
               "ATF Mercon LV",
-              "ATF Type A",
             ],
           },
         ],
@@ -469,7 +483,7 @@ export const PRODUCT_CATALOGUE: ProductCategory[] = [
           "Anti-wear hydraulic fluids for paper mill and sugar mill hydraulic systems, press sections, and control circuits.",
         icon: "💧",
         gradeGroups: [
-          { grades: ["68"] },
+          { grades: ["ISO VG 68"] },
         ],
       },
       {
@@ -479,7 +493,7 @@ export const PRODUCT_CATALOGUE: ProductCategory[] = [
           "Heavy-duty extreme-pressure gear lubricants for mill drives, roller press gearboxes, and conveyor gearboxes in paper and sugar mills.",
         icon: "⚙️",
         gradeGroups: [
-          { grades: ["100", "150", "220", "320"] },
+          { grades: ["ISO VG 100", "ISO VG 150", "ISO VG 220", "ISO VG 320"] },
         ],
       },
       {
@@ -491,11 +505,11 @@ export const PRODUCT_CATALOGUE: ProductCategory[] = [
         gradeGroups: [
           {
             grades: [
-              "MP3",
               "EP2",
-              "High Temperature Grease",
-              "Bell Load Grease",
+              "MP3",
               "Bearing Grease",
+              "Bell Load Grease",
+              "High Temperature Grease",
             ],
           },
         ],
@@ -520,7 +534,7 @@ export const PRODUCT_CATALOGUE: ProductCategory[] = [
           "Anti-wear hydraulic fluids for excavators, loaders, drilling rigs, and quarry machinery hydraulic systems.",
         icon: "💧",
         gradeGroups: [
-          { grades: ["32", "68"] },
+          { grades: ["ISO VG 32", "ISO VG 68"] },
         ],
       },
       {
@@ -531,12 +545,12 @@ export const PRODUCT_CATALOGUE: ProductCategory[] = [
         icon: "⚙️",
         gradeGroups: [
           {
-            groupName: "Industrial EP Gear Oil",
-            grades: ["150", "320", "460"],
+            groupName: "Industrial EP Gear Oil (ISO VG)",
+            grades: ["ISO VG 150", "ISO VG 320", "ISO VG 460"],
           },
           {
-            groupName: "Automotive Gear Oil",
-            grades: ["80W-90", "85W-140", "10W-30", "15W-40", "20W-40", "5W-30"],
+            groupName: "Automotive Gear Oil (SAE)",
+            grades: ["SAE 5W-30", "SAE 10W-30", "SAE 15W-40", "SAE 20W-40", "SAE 80W-90", "SAE 85W-140"],
           },
         ],
       },
@@ -547,7 +561,7 @@ export const PRODUCT_CATALOGUE: ProductCategory[] = [
           "Multi-purpose and extreme-pressure greases for chassis points, bearings, and heavily loaded pivots on quarrying and earthmoving equipment.",
         icon: "🔧",
         gradeGroups: [
-          { grades: ["MP3", "EP2", "EP00", "EP000"] },
+          { grades: ["EP000", "EP00", "EP2", "MP3"] },
         ],
       },
     ],
@@ -570,7 +584,7 @@ export const PRODUCT_CATALOGUE: ProductCategory[] = [
           "High-performance anti-wear hydraulic fluids for injection moulding machine clamping circuits, injection units, and servo-hydraulic systems.",
         icon: "💧",
         gradeGroups: [
-          { grades: ["32", "46", "68", "100"] },
+          { grades: ["ISO VG 32", "ISO VG 46", "ISO VG 68", "ISO VG 100"] },
         ],
       },
       {
@@ -580,7 +594,7 @@ export const PRODUCT_CATALOGUE: ProductCategory[] = [
           "Fluid greases for automatic centralised lubrication systems, toggle mechanisms, and sliding guides on injection moulding machines.",
         icon: "🔧",
         gradeGroups: [
-          { grades: ["EP00", "EP000"] },
+          { grades: ["EP000", "EP00"] },
         ],
       },
     ],
@@ -603,7 +617,7 @@ export const PRODUCT_CATALOGUE: ProductCategory[] = [
           "Anti-wear hydraulic fluids for hydraulic pump test rigs, pump-driven hydraulic systems, and compressor control circuits.",
         icon: "💧",
         gradeGroups: [
-          { grades: ["32", "46", "68", "90", "100", "150", "220"] },
+          { grades: ["ISO VG 32", "ISO VG 46", "ISO VG 68", "ISO VG 100", "ISO VG 150", "ISO VG 220"] },
         ],
       },
       {
@@ -613,7 +627,7 @@ export const PRODUCT_CATALOGUE: ProductCategory[] = [
           "Diesel engine lubricant for engine-driven pump sets and engine-driven compressor units used in field and industrial applications.",
         icon: "🏎️",
         gradeGroups: [
-          { grades: ["20W-40"] },
+          { grades: ["SAE 20W-40"] },
         ],
       },
     ],
@@ -624,7 +638,7 @@ export const PRODUCT_CATALOGUE: ProductCategory[] = [
   // ══════════════════════════════════════
   {
     id: "agriculture",
-    name: "Agriculture",
+    name: "Agricultural Machinery Manufacturers",
     description:
       "Engine oils, gear oils, and greases for tractors, combine harvesters, tillers, and agricultural machinery.",
     icon: "🌾",
@@ -636,7 +650,7 @@ export const PRODUCT_CATALOGUE: ProductCategory[] = [
           "Heavy-duty diesel engine lubricants for agricultural tractors, tillers, and farm machinery engines operating under varying load conditions.",
         icon: "🏎️",
         gradeGroups: [
-          { grades: ["15W-40", "20W-40"] },
+          { grades: ["SAE 15W-40", "SAE 20W-40"] },
         ],
       },
       {
@@ -646,7 +660,7 @@ export const PRODUCT_CATALOGUE: ProductCategory[] = [
           "Monograde gear lubricants for tractor gearboxes, rear axles, and power take-off (PTO) units.",
         icon: "⚙️",
         gradeGroups: [
-          { grades: ["90", "140"] },
+          { grades: ["SAE 90", "SAE 140"] },
         ],
       },
       {
@@ -687,7 +701,7 @@ export const PRODUCT_CATALOGUE: ProductCategory[] = [
           "Anti-wear hydraulic fluid for rubber injection moulding, compression moulding, and vulcanising press hydraulic circuits.",
         icon: "💧",
         gradeGroups: [
-          { grades: ["68"] },
+          { grades: ["ISO VG 68"] },
         ],
       },
       {
@@ -697,7 +711,7 @@ export const PRODUCT_CATALOGUE: ProductCategory[] = [
           "Extreme-pressure gear lubricant for heavy gearboxes on rubber mixing mills, open mills, and calender drives.",
         icon: "⚙️",
         gradeGroups: [
-          { grades: ["460"] },
+          { grades: ["ISO VG 460"] },
         ],
       },
       {
@@ -708,39 +722,6 @@ export const PRODUCT_CATALOGUE: ProductCategory[] = [
         icon: "🔧",
         gradeGroups: [
           { grades: ["MP3"] },
-        ],
-      },
-    ],
-  },
-
-  // ══════════════════════════════════════
-  // 10. LUBRICANTS & GEAR/HYDRAULIC OILS
-  // ══════════════════════════════════════
-  {
-    id: "lubricants-gear-hydraulic",
-    name: "Lubricants & Gear/Hydraulic Oils",
-    description:
-      "Full range of industrial gear oils and hydraulic oils covering all ISO viscosity grades for general industrial and OEM supply.",
-    icon: "🛢️",
-    productTypes: [
-      {
-        id: "gear-oil",
-        name: "Gear Oil",
-        shortDesc:
-          "Full range of extreme-pressure industrial gear lubricants covering ISO VG 90 to 1000 for all enclosed gearbox applications.",
-        icon: "⚙️",
-        gradeGroups: [
-          { grades: ["90", "140", "150", "220", "320", "460", "680", "880", "1000"] },
-        ],
-      },
-      {
-        id: "hydraulic-oil",
-        name: "Hydraulic Oil",
-        shortDesc:
-          "Complete range of anti-wear hydraulic fluids from ISO VG 12 to 220, covering all industrial hydraulic system requirements.",
-        icon: "💧",
-        gradeGroups: [
-          { grades: ["ISO VG 12", "32", "46", "54", "68", "100", "150", "220"] },
         ],
       },
     ],
