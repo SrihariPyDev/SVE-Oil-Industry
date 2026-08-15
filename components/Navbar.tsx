@@ -99,8 +99,8 @@ export default function Navbar() {
                 id="navbar-logo-container"
                 className={`relative flex-shrink-0 transition-all duration-500 group-hover:scale-105 ${
                   scrolled
-                    ? "w-[72px] h-[72px] sm:w-[88px] sm:h-[88px]"
-                    : "w-[92px] h-[92px] sm:w-[116px] sm:h-[116px]"
+                    ? "w-[50px] h-[50px] sm:w-[62px] sm:h-[62px]"
+                    : "w-[64px] h-[64px] sm:w-[80px] sm:h-[80px]"
                 }`}
               >
                 <Image

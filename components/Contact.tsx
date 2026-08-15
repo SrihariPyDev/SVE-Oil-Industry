@@ -2,53 +2,8 @@
 
 import React, { useState, useMemo } from "react";
 import { COMPANY } from "@/data/config";
-import { PRODUCTS } from "@/data/products";
+import { PRODUCT_CATALOGUE } from "@/data/productCatalogue";
 
-// ─── Industry → Product Category Mapping ────────────────────────────────────
-const INDUSTRIES = [
-  {
-    id: "automotive",
-    label: "Automotive & Transport",
-    icon: "🚗",
-    categories: ["Engine Lubricants"],
-    extra: ["Engine Oil", "Gear Oil", "Grease"],
-  },
-  {
-    id: "industrial",
-    label: "Industrial & Manufacturing",
-    icon: "🏭",
-    categories: ["Industrial Oils", "Greases", "Precision Lubricants"],
-    extra: [],
-  },
-  {
-    id: "metalworking",
-    label: "Metalworking & CNC Machining",
-    icon: "⚙️",
-    categories: ["Metalworking Fluids", "Protective Oils", "Precision Lubricants"],
-    extra: [],
-  },
-  {
-    id: "power",
-    label: "Power & Electrical",
-    icon: "⚡",
-    categories: ["Electrical Oils", "Process Fluids"],
-    extra: ["Turbine Oil"],
-  },
-  {
-    id: "textile",
-    label: "Textile Industry",
-    icon: "🧵",
-    categories: ["Precision Lubricants", "Process Fluids", "Specialty Products"],
-    extra: [],
-  },
-  {
-    id: "specialty",
-    label: "Specialty & Other",
-    icon: "✨",
-    categories: ["Greases", "Specialty Products", "Protective Oils"],
-    extra: [],
-  },
-];
 
 type FormState = {
   name: string;
@@ -75,23 +30,30 @@ export default function Contact() {
     }
   };
 
-  // Derive product list from selected industry
+  // Derive product list from selected industry using PRODUCT_CATALOGUE
   const filteredProducts = useMemo(() => {
     if (!form.industry) return [];
-    const industry = INDUSTRIES.find((ind) => ind.id === form.industry);
-    if (!industry) return [];
-    return PRODUCTS.filter((p) => {
-      return (
-        industry.categories.includes(p.category) ||
-        industry.extra.includes(p.name)
-      );
+    const cat = PRODUCT_CATALOGUE.find((c) => c.id === form.industry);
+    if (!cat) return [];
+    // Collect all product type names (de-duped)
+    const seen = new Set<string>();
+    return cat.productTypes.filter((pt) => {
+      if (seen.has(pt.name)) return false;
+      seen.add(pt.name);
+      return true;
     });
+  }, [form.industry]);
+
+  // Derive label for selected industry
+  const selectedIndustryLabel = useMemo(() => {
+    const cat = PRODUCT_CATALOGUE.find((c) => c.id === form.industry);
+    return cat?.name ?? "";
   }, [form.industry]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const subject = `Product Enquiry${form.product ? `: ${form.product}` : ""}${form.industry ? ` (${INDUSTRIES.find(i => i.id === form.industry)?.label ?? form.industry})` : ""} — ${form.name}`;
-    const body = `Name: ${form.name}\nPhone: ${form.phone}\nEmail: ${form.email}\nCompany: ${form.company}\nIndustry: ${INDUSTRIES.find(i => i.id === form.industry)?.label ?? ""}\nProduct of Interest: ${form.product}\n\nMessage:\n${form.message}`;
+    const subject = `Product Enquiry${form.product ? `: ${form.product}` : ""}${form.industry ? ` (${selectedIndustryLabel})` : ""} — ${form.name}`;
+    const body = `Name: ${form.name}\nPhone: ${form.phone}\nEmail: ${form.email}\nCompany: ${form.company}\nIndustry: ${selectedIndustryLabel}\nProduct of Interest: ${form.product}\n\nMessage:\n${form.message}`;
     window.location.href = `mailto:${COMPANY.contact.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     setSubmitted(true);
     setTimeout(() => setSubmitted(false), 5000);
@@ -100,7 +62,7 @@ export default function Contact() {
   const inputClass =
     "w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#0f172a]/40 focus:ring-2 focus:ring-[#0f172a]/8 transition-all duration-200";
 
-  const selectedIndustry = INDUSTRIES.find((i) => i.id === form.industry);
+  const selectedIndustry = PRODUCT_CATALOGUE.find((c) => c.id === form.industry);
 
   return (
     <section id="contact" className="relative bg-white overflow-hidden py-20 lg:py-28">
@@ -255,7 +217,7 @@ export default function Contact() {
                   </div>
                 </div>
 
-                {/* ── Two-Step: Step 1 — Industry ─────────────────────────── */}
+                {/* ── Two-Step: Step 1 — Industry ───────────────────── */}
                 <div>
                   <label htmlFor="contact-industry" className="block text-[11px] font-bold text-gray-500 mb-1.5 uppercase tracking-wide">
                     Step 1 — Select Your Industry
@@ -268,9 +230,9 @@ export default function Contact() {
                     className={inputClass}
                   >
                     <option value="">Choose an industry…</option>
-                    {INDUSTRIES.map((ind) => (
-                      <option key={ind.id} value={ind.id}>
-                        {ind.icon}  {ind.label}
+                    {PRODUCT_CATALOGUE.map((cat) => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.name}
                       </option>
                     ))}
                   </select>
@@ -283,7 +245,7 @@ export default function Contact() {
                       Step 2 — Product of Interest
                       {selectedIndustry && (
                         <span className="ml-2 text-[#d4a435] normal-case font-semibold tracking-normal">
-                          ({selectedIndustry.label})
+                          ({selectedIndustry.name})
                         </span>
                       )}
                     </label>

@@ -166,35 +166,40 @@ const GradeChip = memo(function GradeChip({
 // ─────────────────────────────────────────
 /** Map product-type id → public image path (user-uploaded PNG files). */
 const PRODUCT_TYPE_IMAGES: Record<string, string> = {
-  // Automotive
-  "engine-oil":            "/images/products/engine_oil.png",
-  "gear-oil":              "/images/products/gear_oil.png",
-  "hydraulic-oil":         "/images/products/hydraulic_oil.png",
-  "hlp-hydraulic-oil":     "/images/products/hlp_hydraulic_oil.png",
-  "brake-oil":             "/images/products/brake_oil.png",
-  "transmission-oil":      "/images/products/transmission_oil.png",
-  "screw-compressor-oil":  "/images/products/screw_compressor_oil.png",
-  // Industrial
-  "turbine-oil":           "/images/products/turbine_oil.png",
-  "compressor-oil":        "/images/products/compressor_oil.png",
-  "transformer-oil":       "/images/products/transformer_oil.png",
-  "heat-transfer-oil":     "/images/products/heat_transfer_oil.png",
-  "rust-preventive-oil":   "/images/products/rust_preventive_oil.png",
-  "spindle-oil":           "/images/products/spindle_oil.png",
-  // Textile units
-  "spinning-unit":         "/images/products/spinning_unit.png",
-  "sizing-unit":           "/images/products/sizing_unit.png",
-  "weaving-unit":          "/images/products/weaving_unit.png",
-  "dyeing-unit":           "/images/products/dyeing_unit.png",
-  "knitting-unit":         "/images/products/knitting_unit.png",
-  // Metal Working
-  "cutting-oil":           "/images/products/cutting_oil.png",
-  "neat-cutting-oil":      "/images/products/neat_cutting_oil.png",
-  "quenching-oil":         "/images/products/quenching_oil.png",
-  // Specialty
-  "grease":                "/images/products/grease_oil.png",
-  "specialty-greases":     "/images/products/specialty_greases_oil.png",
-  "specialty-oils":        "/images/products/specialty_oil.png",
+  // ── Automotive ─────────────────────────────────────────────────
+  "engine-oil":              "/images/products/engine_oil.png",
+  "gear-oil":                "/images/products/gear_oil.png",
+  "hydraulic-oil":           "/images/products/hydraulic_oil.png",
+  "hlp-hydraulic-oil":       "/images/products/hlp_hydraulic_oil.png",
+  "brake-oil":               "/images/products/brake_oil.png",
+  "transmission-oil":        "/images/products/transmission_oil.png",
+  "screw-compressor-oil":    "/images/products/screw_compressor_oil.png",
+  // ── Industrial / general ────────────────────────────────────────
+  "turbine-oil":             "/images/products/turbine_oil.png",
+  "compressor-oil":          "/images/products/compressor_oil.png",
+  "transformer-oil":         "/images/products/transformer_oil.png",
+  "heat-transfer-oil":       "/images/products/heat_transfer_oil.png",
+  "rust-preventive-oil":     "/images/products/rust_preventive_oil.png",
+  "rust-preventive":         "/images/products/rust_preventive_oil.png",
+  "spindle-oil":             "/images/products/spindle_oil.png",
+  // ── Textile units ───────────────────────────────────────────────
+  "spinning-unit":           "/images/products/spinning_unit.png",
+  "sizing-unit":             "/images/products/sizing_unit.png",
+  "weaving-unit":            "/images/products/weaving_unit.png",
+  "dyeing-unit":             "/images/products/dyeing_unit.png",
+  "knitting-unit":           "/images/products/knitting_unit.png",
+  // ── Metal Working Fluids ────────────────────────────────────────
+  "coolants":                "/images/products/coolants.png",
+  "way-lube":                "/images/products/way_lube.png",
+  "cutting-oil":             "/images/products/cutting_oil.png",
+  "neat-cutting-oil":        "/images/products/neat_cutting_oil.png",
+  "quenching-oil":           "/images/products/quenching_oil.png",
+  // ── Greases & Specialty ─────────────────────────────────────────
+  "grease":                  "/images/products/grease_oil.png",
+  "specialty-greases":       "/images/products/specialty_greases_oil.png",
+  "specialty-oils":          "/images/products/specialty_oil.png",
+  // ── Rubber Industries ───────────────────────────────────────────
+  "rubber-oil":              "/images/products/rubber_oil.png",
 };
 
 // ─────────────────────────────────────────
@@ -328,11 +333,18 @@ const EnquiryBar = memo(function EnquiryBar({ productName }: { productName: stri
 
 /** Map category id → public image path */
 const CATEGORY_IMAGES: Record<string, string> = {
-  automotive:   "/images/products/cat_automotive.jpg",
-  industrial:   "/images/products/cat_industrial.jpg",
-  textile:      "/images/products/cat_textile.jpg",
-  metalworking: "/images/products/cat_metalworking.jpg",
-  specialty:    "/images/products/cat_specialty.jpg",
+  // Original industries (.jpg)
+  automotive:                    "/images/products/cat_automotive.jpg",
+  textile:                       "/images/products/cat_textile.jpg",
+  metalworking:                  "/images/products/cat_metalworking.jpg",
+  // New industries (.png)
+  "paper-sugar-mills":           "/images/products/cat_paper-sugar-mills.png",
+  "quarries-blue-metals":        "/images/products/cat_quarries-blue-metals.png",
+  "injection-mouldings":         "/images/products/cat_injection-mouldings.png",
+  "pump-compressor":             "/images/products/cat_pump-compressor.png",
+  agriculture:                   "/images/products/cat_agriculture.png",
+  "rubber-industries":           "/images/products/cat_rubber-industries.png",
+  "lubricants-gear-hydraulic":   "/images/products/cat_lubricants-gear-hydraulic.png",
 };
 
 interface CategoryCardProps {
@@ -364,7 +376,7 @@ const CategoryCard = memo(function CategoryCard({
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             className="object-cover transition-transform duration-500 group-hover:scale-105"
-            priority={index < 3}
+            priority={index < 6}
           />
         ) : (
           <div className="w-full h-full bg-[#0f1e36] flex items-center justify-center text-5xl">
@@ -452,10 +464,11 @@ function CategoriesView({ onSelect }: CategoriesViewProps) {
 // ─────────────────────────────────────────
 interface TypeCardProps {
   type: ProductType;
+  index: number;
   onClick: () => void;
 }
 
-const TypeCard = memo(function TypeCard({ type, onClick }: TypeCardProps) {
+const TypeCard = memo(function TypeCard({ type, index, onClick }: TypeCardProps) {
   const isTextileUnit = Boolean(type.subItems && type.subItems.length > 0);
   const gradeCount = type.gradeGroups
     ? type.gradeGroups.reduce((sum, g) => sum + g.grades.length, 0)
@@ -506,7 +519,8 @@ const TypeCard = memo(function TypeCard({ type, onClick }: TypeCardProps) {
               src={imageSrc}
               alt={type.name}
               fill
-              loading="lazy"
+              priority={index < 6}
+              loading={index < 6 ? undefined : "lazy"}
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
               className="object-cover transition-transform duration-500 group-hover:scale-105"
             />
@@ -578,8 +592,8 @@ function TypesView({ category, onSelect, onBack }: TypesViewProps) {
     <div>
       <BackButton label="Back to Categories" onClick={onBack} />
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-        {category.productTypes.map((type) => (
-          <TypeCard key={type.id} type={type} onClick={() => onSelect(type)} />
+        {category.productTypes.map((type, i) => (
+          <TypeCard key={type.id} type={type} index={i} onClick={() => onSelect(type)} />
         ))}
       </div>
     </div>
