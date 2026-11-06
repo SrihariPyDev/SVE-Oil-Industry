@@ -4,22 +4,24 @@ import React, { useState } from "react";
 import Image from "next/image";
 
 const BRANDS = [
-  { id: "Castrol",      name: "Castrol" },
-  { id: "Mobil",        name: "Mobil" },
-  { id: "Shell",        name: "Shell" },
-  { id: "Valvoline",    name: "Valvoline" },
-  { id: "Total-Energies",  name: "Total-Energies" },
-  { id: "Eni",          name: "Eni" },
-  { id: "Kluber",       name: "Kluber" },
-  { id: "Mosil",        name: "Mosil" },
-  { id: "Selco",       name: "Selco" },
-  { id: "Servo",        name: "Servo" },
-  { id: "HP",           name: "HP" },
-  { id: "Mak",          name: "Mak" },
-  { id: "Balmerol",     name: "Balmerol" },
-  { id: "Motorol",      name: "Motorol" },
-  { id: "SKF",          name: "SKF" },
-  { id: "torq",         name: "Torq" },
+  { id: "Molygraph",      name: "Molygraph" },
+  { id: "Castrol",        name: "Castrol" },
+  { id: "Mobil",          name: "Mobil" },
+  { id: "Shell",          name: "Shell" },
+  { id: "Valvoline",      name: "Valvoline" },
+  { id: "Total-Energies", name: "Total-Energies" },
+  { id: "Eni",            name: "Eni" },
+  { id: "Kluber",         name: "Kluber" },
+  { id: "Mosil",          name: "Mosil" },
+  { id: "Selco",          name: "Selco" },
+  { id: "Servo",          name: "Servo" },
+  { id: "HP",             name: "HP" },
+  { id: "Mak",            name: "Mak" },
+  { id: "Balmerol",       name: "Balmerol" },
+  { id: "Motorol",        name: "Motorol" },
+  { id: "SKF",            name: "SKF" },
+  { id: "torq",           name: "Torq" },
+  
 ];
 
 export default function Dealers() {
