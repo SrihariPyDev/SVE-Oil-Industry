@@ -56,6 +56,10 @@ html {
   -webkit-text-size-adjust: 100%;
   /* Prevent scroll chaining — keeps page scroll snappy */
   overscroll-behavior: none;
+  /* Issue 1 fix: Prevent mobile browsers from auto-forcing dark mode colors.
+     The site has its own authored dark/light sections — we do NOT want the
+     browser to override any text, background, or icon colors. */
+  color-scheme: only light;
 }
 
 body {
@@ -66,6 +70,8 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   /* NOTE: Do NOT add transform here — it breaks position:fixed navbar */
+  /* Issue 1 fix: Explicit color-scheme reinforcement for body */
+  color-scheme: only light;
 }
 
 /* Fast touch response — removes 300ms tap delay everywhere */

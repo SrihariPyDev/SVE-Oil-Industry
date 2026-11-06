@@ -217,8 +217,11 @@ export default function Navbar() {
       </nav>
 
       {/* Mobile Menu */}
+      {/* Issue 2 fix: raised from z-40 → z-[60] so the drawer always sits above
+          the fixed navbar (z-50). Previously the navbar covered the drawer header
+          and close button after any page scroll, making the close button unclickable. */}
       <div
-        className={`fixed inset-0 z-40 transition-all duration-400 ${menuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
+        className={`fixed inset-0 z-[60] transition-all duration-400 ${menuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
       >
         {/* Backdrop */}
         <div className="absolute inset-0 bg-[#0f172a]/40 backdrop-blur-sm" onClick={() => setMenuOpen(false)} />
