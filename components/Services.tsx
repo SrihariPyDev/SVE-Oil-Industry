@@ -122,7 +122,7 @@ export default function Services() {
                 >
                   {/* Icon */}
                   <div
-                    className={`service-icon-box ${isOpen ? "is-open" : ""} w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300 group-hover:scale-105 shadow-sm`}
+                    className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300 group-hover:scale-105 shadow-sm"
                     style={{
                       background: isOpen
                         ? "linear-gradient(135deg, #0f172a, #1a2744)"

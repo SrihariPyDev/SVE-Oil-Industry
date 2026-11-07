@@ -205,7 +205,7 @@ export default function About() {
                   >
                     {/* Icon */}
                     <div
-                      className={`value-icon-box ${isOpen ? "is-open" : ""} w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300 group-hover:scale-105`}
+                      className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-all duration-300 group-hover:scale-105"
                       style={{
                         background: isOpen
                           ? "linear-gradient(135deg, #0f172a, #1a2744)"
