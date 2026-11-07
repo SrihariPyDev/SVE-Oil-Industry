@@ -1,6 +1,11 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Outfit, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
+
+export const viewport: Viewport = {
+  themeColor: "#0f172a",
+  colorScheme: "light",
+};
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -47,6 +52,10 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${plusJakartaSans.variable} ${outfit.variable} scroll-smooth`}>
       <head>
+        {/* Prevent unwanted mobile browser auto-darkening tint */}
+        <meta name="color-scheme" content="only light" />
+        <meta name="supported-color-schemes" content="light" />
+
         {/* Instant WhatsApp & Email link preconnect */}
         <link rel="preconnect" href="https://wa.me" />
         <link rel="dns-prefetch" href="https://wa.me" />

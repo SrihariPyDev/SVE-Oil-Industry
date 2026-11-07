@@ -221,6 +221,11 @@ video {
 .animate-accordion-open       { animation: accordion-open 0.3s cubic-bezier(0.16,1,0.3,1) forwards; }
 .animate-emerald-pulse        { animation: emerald-pulse 2.5s ease-in-out infinite; }
 
+@keyframes enquiry-timer {
+  from { width: 100%; }
+  to   { width: 0%; }
+}
+
 @keyframes preloader-logo-glow {
   0% {
     transform: scale(0.75);
@@ -282,12 +287,16 @@ video {
    GOLD SHIMMER TEXT
    ============================================================ */
 .gold-shimmer {
-  background: linear-gradient(90deg, #c9a227 0%, #f0d28a 40%, #c9a227 60%, #a0780a 100%);
+  background: linear-gradient(90deg, #d4a435 0%, #fef08a 35%, #ffd700 65%, #d4a435 100%);
   background-size: 200% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   animation: shimmer 4s linear infinite;
+  /* Prevent any browser dark-mode filter from tinting this gradient */
+  forced-color-adjust: none;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
 }
 
 /* Emerald shimmer text variant */
@@ -298,6 +307,9 @@ video {
   -webkit-text-fill-color: transparent;
   background-clip: text;
   animation: shimmer 4s linear infinite;
+  forced-color-adjust: none;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
 }
 
 /* ============================================================
@@ -555,4 +567,105 @@ video {
    ============================================================ */
 h1, h2, h3, h4 {
   font-family: var(--font-display);
+}
+
+
+/* ============================================================
+   DARK MODE COLOUR LOCK — Mobile Browser Tint Prevention
+   Some Android/iOS browsers apply automatic dark-mode colour
+   filters even when color-scheme: only light is set. This block
+   re-locks every gold, navy and icon colour to its exact authored
+   value so the design renders correctly in system dark mode.
+   ============================================================ */
+
+/* Utility class to prevent dark-mode browser from tinting
+   elements that use gold/brand colours. */
+.color-lock {
+  forced-color-adjust: none;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+
+@media (prefers-color-scheme: dark) {
+
+  /* ── Gold shimmer text in Dark Mode ──
+     In dark mode, browsers invert background-clip:text gradients into dark brown mud.
+     We explicitly fill the text with luminous 24K gold (#ffd700) and animate a radiant
+     gleam with gold-pulse so it stays brilliant, alive, and unmistakably golden. */
+  .gold-shimmer {
+    background: none !important;
+    -webkit-background-clip: unset !important;
+    background-clip: unset !important;
+    -webkit-text-fill-color: #ffd700 !important;
+    color: #ffd700 !important;
+    text-shadow: 0 0 16px rgba(255, 215, 0, 0.45) !important;
+    animation: gold-pulse 3s ease-in-out infinite alternate !important;
+    display: inline-block;
+  }
+
+  /* ── Emerald shimmer text ── */
+  .emerald-shimmer {
+    background: none !important;
+    -webkit-background-clip: unset !important;
+    background-clip: unset !important;
+    -webkit-text-fill-color: #34d399 !important;
+    color: #34d399 !important;
+    text-shadow: 0 0 16px rgba(52, 211, 153, 0.45) !important;
+    display: inline-block;
+  }
+
+  /* ── Section labels (WHO WE ARE, TECHNICAL SUPPORT, etc.) ── */
+  .section-label {
+    color: #ffd700 !important;
+  }
+  .section-label::before,
+  .section-label::after {
+    background: #ffd700 !important;
+  }
+
+  /* ── Accordion Icon Badges (About Us Values & Technical Support Services) ──
+     On mobile dark mode, bright gold gradient backgrounds are inverted to dark brown.
+     We give them a rich golden border, subtle gold-tinted dark background, and luminous
+     gold icon so they look intentional, premium, and crystal clear. */
+  .service-icon-box,
+  .value-icon-box {
+    background: rgba(212, 164, 53, 0.16) !important;
+    border: 1.5px solid rgba(255, 215, 0, 0.45) !important;
+    color: #ffd700 !important;
+    box-shadow: 0 0 12px rgba(255, 215, 0, 0.15) !important;
+  }
+  .service-icon-box.is-open,
+  .value-icon-box.is-open {
+    background: #0f172a !important;
+    border: 1.5px solid #ffd700 !important;
+    color: #ffd700 !important;
+    box-shadow: 0 0 16px rgba(255, 215, 0, 0.3) !important;
+  }
+
+  /* ── Lock the CSS gold variables ── */
+  :root {
+    --gold-50:  #fffbf0 !important;
+    --gold-100: #fef3c7 !important;
+    --gold-200: #fde68a !important;
+    --gold-300: #f5cc5a !important;
+    --gold-400: #ffd700 !important;
+    --gold-500: #eab308 !important;
+    --gold-600: #ca8a04 !important;
+    --gold-700: #a16207 !important;
+  }
+}
+
+@keyframes gold-pulse {
+  0% {
+    color: #ffd700;
+    text-shadow: 0 0 8px rgba(255, 215, 0, 0.3);
+  }
+  50% {
+    color: #fef08a;
+    text-shadow: 0 0 18px rgba(255, 240, 138, 0.65);
+  }
+  100% {
+    color: #ffd700;
+    text-shadow: 0 0 8px rgba(255, 215, 0, 0.3);
+  }
 }
