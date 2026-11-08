@@ -79,6 +79,9 @@ export const metadata: Metadata = {
     "oil distributor Coimbatore",
     "industrial lubricant Somanur",
     "lubricant distributor near me",
+    "Coimbatore oil supplier",
+    "Coimbatore lubricant distributor",
+    "Coimbatore industrial oil supplier",
     "oil supplier near me",
     // Industry-specific
     "textile industry lubricants",
