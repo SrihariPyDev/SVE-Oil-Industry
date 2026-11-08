@@ -18,6 +18,10 @@ const FloatingButtons = dynamic(() => import("@/components/FloatingButtons"));
 export default function Home() {
   return (
     <main>
+      {/* Hidden SEO landmark for screen readers & crawlers — not visible to users */}
+      <h1 className="sr-only">
+        Sri Venkateswara Enterprises — Industrial Lubricant Distributor in Tamil Nadu, India
+      </h1>
       <Preloader />
       <Navbar />
       <Hero />

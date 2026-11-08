@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+# Block Next.js internals
+Disallow: /_next/
+Disallow: /api/
+
+# Sitemap
+Sitemap: https://sve-oil-industry.netlify.app/sitemap.xml
