@@ -298,9 +298,6 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${plusJakartaSans.variable} ${outfit.variable} scroll-smooth`}>
       <head>
-        {/* Canonical */}
-        <link rel="canonical" href={BASE_URL} />
-
         {/* Geo meta — helps local SEO for Tamil Nadu / India */}
         <meta name="geo.region" content="IN-TN" />
         <meta name="geo.placename" content="Somanur, Tamil Nadu, India" />

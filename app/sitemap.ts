@@ -1,48 +1,55 @@
-import { MetadataRoute } from "next";
+import type { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://sve-oil-industry.netlify.app";
+  const baseUrl = "https://www.srivenkateswaraenterprises.com";
+  const currentDate = new Date();
 
   return [
     {
       url: baseUrl,
-      lastModified: new Date(),
+      lastModified: currentDate,
       changeFrequency: "weekly",
       priority: 1.0,
     },
     {
       url: `${baseUrl}/#about`,
-      lastModified: new Date(),
+      lastModified: currentDate,
       changeFrequency: "monthly",
       priority: 0.8,
     },
     {
       url: `${baseUrl}/#products`,
-      lastModified: new Date(),
+      lastModified: currentDate,
       changeFrequency: "weekly",
       priority: 0.9,
     },
     {
       url: `${baseUrl}/#services`,
-      lastModified: new Date(),
+      lastModified: currentDate,
       changeFrequency: "monthly",
       priority: 0.8,
     },
     {
       url: `${baseUrl}/#distributors`,
-      lastModified: new Date(),
+      lastModified: currentDate,
       changeFrequency: "monthly",
-      priority: 0.7,
+      priority: 0.8,
     },
     {
       url: `${baseUrl}/#dealers`,
-      lastModified: new Date(),
+      lastModified: currentDate,
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/#why-us`,
+      lastModified: currentDate,
       changeFrequency: "monthly",
       priority: 0.7,
     },
     {
       url: `${baseUrl}/#contact`,
-      lastModified: new Date(),
+      lastModified: currentDate,
       changeFrequency: "monthly",
       priority: 0.8,
     },
