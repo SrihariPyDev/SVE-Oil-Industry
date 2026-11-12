@@ -16,7 +16,7 @@ const outfit = Outfit({
   weight: ["300", "400", "500", "600", "700", "800", "900"],
 });
 
-const BASE_URL = "https://sve-oil-industry.netlify.app";
+const BASE_URL = "https://www.srivenkateswaraenterprises.com";
 
 export const viewport: Viewport = {
   themeColor: "#0f172a",
